@@ -1,4 +1,4 @@
-# Data Engineering Skills Assessment
+# StackUp Engineering Academy Assessment
 
 > **StackUp Engineering Academy** — Learning Pathway: Data Analyst / Modeler / BI Specialist → Fullstack Data Engineer
 
