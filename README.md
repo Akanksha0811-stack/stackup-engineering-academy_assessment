@@ -30,8 +30,8 @@ Ensure the following are installed before cloning:
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/your-org/de-skills-assessment.git
-cd de-skills-assessment
+git clone https://github.com/your-org/stackup-engineering-academy_assessment.git
+cd stackup-engineering-academy_assessment
 ```
 
 **2. Create your personal branch**
