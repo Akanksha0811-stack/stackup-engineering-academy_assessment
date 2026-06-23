@@ -92,10 +92,7 @@ pip install -r requirements.txt
 # 4. Start Docker services
 docker-compose up -d
 
-# 5. (Optional) Regenerate datasets
-python scripts/generate_data.py
-
-# 6. Start with Pillar 1
+# 5. Start with Pillar 1
 cat tasks/01_foundations/INSTRUCTIONS.md
 ```
 
