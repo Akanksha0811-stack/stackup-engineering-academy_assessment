@@ -1,59 +1,64 @@
 # Pillar 2 — SQL & Data Visualization
 
-> **Time allocation:** ~3.5 hours  
+> **Time allocation:** ~4 hours  
 > **Starter files:** `starter_files/etl_starter.py` (Task 2.2), `starter_files/data_model_starter.sql` (Tasks 2.1 & 2.3)
 
 ---
 
 ## Context
 
-With clean data from Pillar 1, you now build the analytics layer. The Finance and Operations teams need reliable SQL queries for their dashboards, and the Head of Data has asked for a demonstration Power BI report showing project spend performance.
+With clean data from Pillar 1, you build the analytics layer. Finance and Operations teams need reliable SQL queries for dashboards. The Head of Data wants a Power BI report showing project spend performance.
+
+**Working with 500 projects, 1,000 employees, 50,000 transactions, and ~1,800 salary history records — query design matters now.**
 
 ---
 
-## Task 2.1 — SQL: Answer five business questions
+## Task 2.1 — SQL: Answer six business questions
 
 **File:** `starter_files/data_model_starter.sql` → Section 3
 
-First, load your cleaned data from Pillar 1 into your database using Section 2 of the SQL file.
+First, load your cleaned data from Pillar 1 into your warehouse using Section 2.
 
-Then write a SQL query for each of the five questions below. Each query must:
+Each query must:
 - Run without errors
 - Include a comment explaining your approach
 - Return results in the exact column format specified
+- Use the `dim_employee` SCD2 table correctly where employee context is needed (current vs. historical)
 
 ---
 
-**Q1 — Budget performance by department**
+**Q1 — Department budget performance**
 
-Which departments have spent more than 90% of their total allocated budget across all projects? Include departments that are over budget.
+Which departments have spent more than 90% of their total allocated budget? Include departments that are over budget.
 
 Required columns: `department`, `total_budget`, `total_actual_cost`, `spend_percentage`, `over_budget`  
 Order by: `spend_percentage` descending
 
 ---
 
-**Q2 — Project manager workload**
+**Q2 — Project manager workload (with current employee data)**
 
-Which project managers are currently managing more than one active project (status = In Progress)? A manager overseeing too many active projects is a delivery risk.
+Which managers are currently overseeing more than three active projects? A manager with too many active projects is a delivery risk.
 
-Required columns: `full_name`, `email`, `active_project_count`, `combined_budget_responsibility`  
+**Note:** Use `dim_employee` records where `is_current = TRUE`.
+
+Required columns: `full_name`, `email`, `active_project_count`, `combined_budget_responsibility`, `combined_actual_spend`  
 Order by: `active_project_count` descending
 
 ---
 
 **Q3 — Vendor concentration risk**
 
-Identify vendors who account for more than 30% of total transaction spend across all projects. High vendor concentration is a financial and operational risk.
+Identify vendors who account for more than 5% of total transaction spend. With 50,000 transactions, even a 5% share represents meaningful concentration.
 
-Required columns: `vendor_name`, `total_spend`, `percentage_of_total_spend`, `risk_flag` (set to 'HIGH' if above 30%, else 'NORMAL')  
+Required columns: `vendor_name`, `total_spend`, `transaction_count`, `percentage_of_total_spend`, `risk_flag` (HIGH if > 10%, MEDIUM if 5–10%, else NORMAL)  
 Order by: `percentage_of_total_spend` descending
 
 ---
 
-**Q4 — Projects with open issues**
+**Q4 — Projects with open financial issues**
 
-Find all projects that have at least one transaction in 'Pending' or 'Disputed' status. These projects need finance team attention.
+Find all projects with pending or disputed transactions totalling more than 50,000 AED. These need finance team attention.
 
 Required columns: `project_id`, `project_name`, `department`, `project_status`, `open_transaction_count`, `open_transaction_value`  
 Order by: `open_transaction_value` descending
@@ -62,105 +67,168 @@ Order by: `open_transaction_value` descending
 
 **Q5 — Monthly spend trend with running total**
 
-Show total transaction spend per month, per category, for all available data. Include a running total that accumulates within each category across months — this shows how category spend compounds over time.
+Show total transaction spend per month, per category, with a running total accumulating within each category over time. This view drives the Finance dashboard.
 
-Required columns: `year_month` (formatted as YYYY-MM), `category`, `monthly_spend`, `running_total`  
+Required columns: `year_month` (YYYY-MM), `category`, `monthly_spend`, `running_total`, `month_over_month_pct_change`  
 Order by: `category`, `year_month` ascending
 
+**Hint:** Use window functions: `SUM() OVER (PARTITION BY category ORDER BY year_month)` for the running total, and `LAG()` for month-over-month change.
+
 ---
 
-## Task 2.2 — ETL Pipeline: Ingest, transform, and load all three sources
+**Q6 — Employee compensation history analysis**
 
-**File:** `starter_files/etl_starter.py` → functions `load_transactions()`, `enrich_transactions()`, `write_outputs()`
+Using `dim_employee` SCD2 data, identify employees who received the largest single salary increase (in absolute AED terms).
 
-Complete the full ETL pipeline that ingests and joins all three data sources.
+Required columns: `employee_id`, `full_name`, `change_date` (the `valid_from` of the new record), `previous_salary`, `new_salary`, `increase_amount`, `increase_pct`  
+Order by: `increase_amount` descending, top 20
 
-**What to do:**
+**Hint:** Self-join `dim_employee` on `employee_id` matching the previous version's `valid_to` to the next version's `valid_from`.
 
-1. **Load** `datasets/transactions.json` into a Pandas DataFrame
-   - Flatten the JSON into a tabular structure
-   - Parse `transaction_date` as a date type
-   - Decide how to handle null `amount` and null `approved_by` values — document your decision
+---
 
-2. **Enrich** transactions by joining project and employee context:
-   - Add `project_name` and `department` from the projects dataset (via `project_id`)
-   - Add approver `full_name` from the employees dataset (via `approved_by` = `employee_id`)
-   - Add `is_approved` = True if `approved_by` is not null, else False
-   - Add `amount_aed` = `amount` cast to float, nulls set to 0.0
+## Task 2.2 — ETL Pipeline: Ingest, transform, and load
 
-3. **Write outputs:**
-   - Write all three cleaned DataFrames to `outputs/` as CSVs
-   - Write `outputs/pipeline_summary.txt` containing:
-     - Run timestamp
-     - Row counts (before and after cleaning) for each dataset
-     - List of data quality decisions made
+**File:** `starter_files/etl_starter.py` → `load_transactions()`, `enrich_transactions()`, `write_outputs()`
+
+Complete the full ETL pipeline.
+
+**1. Load** `datasets/transactions.json` (50,000 rows) into a Pandas DataFrame
+- Flatten the JSON into tabular structure
+- Parse `transaction_date` as date type
+- Decide how to handle null `amount` and null `approved_by` values — **document your decision**
+
+**2. Enrich** transactions:
+- Add `project_name` and `department` from projects (via `project_id`)
+- Add approver `full_name` from CURRENT employee records (via `approved_by` = `employee_id`)
+- Add `is_approved` = True if `approved_by` not null
+- Add `amount_aed` = `amount` cast to float, nulls → 0.0
+- Add `transaction_year_month` for downstream aggregation
+
+**3. Performance considerations** — with 50,000 transactions:
+- Don't materialise the join result if you're only computing aggregates
+- Use Pandas merge with explicit `on=` and `how=` parameters
+- Consider chunked processing if memory becomes a concern
+
+**4. Write outputs:**
+- All three cleaned DataFrames as CSVs in `outputs/`
+- `outputs/pipeline_summary.txt` containing:
+  - Run timestamp
+  - Row counts before/after for each dataset
+  - Data quality decisions made
+  - Pipeline execution time
 
 **Assessment focus:**
-- Correct handling of JSON → tabular conversion
-- Clean join logic with no row duplication
-- Null handling decisions are documented
-- Pipeline summary is human-readable
+- JSON → tabular conversion is clean
+- Joins produce no row duplication
+- Null handling decisions documented
+- Pipeline handles 50K records in reasonable time (< 30 seconds)
 
 ---
 
-## Task 2.3 — Query Optimisation
+## Task 2.3 — Query Optimisation (NOW MEANINGFUL)
 
 **File:** `starter_files/data_model_starter.sql` → Section 4
 
-A slow query used by the Finance dashboard is provided in Section 4 of the SQL starter file.
+With 50,000 transactions joined to 500 projects and 1,000 employees, query optimisation has measurable impact. **You should see runtime differences of 10x or more between the slow and optimised queries.**
 
-**What to do:**
+The slow query is in Section 4 of the SQL file.
 
-1. Run `EXPLAIN` (or `EXPLAIN ANALYZE`) on the original query and paste the output as a SQL comment
-2. Identify the performance bottleneck — explain it in plain English
-3. Rewrite the query to improve performance. You may:
-   - Restructure the query
-   - Use CTEs
-   - Change implicit joins to explicit joins
-   - Refactor the correlated subquery
-4. Write a comment explaining:
-   - What was wrong with the original
-   - What you changed and why
-   - What indexes you would create in production and why
+**Required deliverables:**
 
-**Note:** If running on a small test dataset, the performance difference may not be measurable. In that case, describe what you would observe at scale and why.
+**4a — Benchmark and analyse the original query**
+
+```sql
+-- Run with timing
+\timing on                            -- PostgreSQL
+.timer on                             -- DuckDB / SQLite
+
+-- Run EXPLAIN ANALYZE
+EXPLAIN ANALYZE [original query];
+```
+
+Paste as comment in your file:
+- Total execution time
+- The EXPLAIN ANALYZE output
+- Identification of:
+  - Which join is the bottleneck?
+  - Which operations have the highest cost?
+  - Are there full table scans where indexes should help?
+  - Is the correlated subquery being re-executed per row?
+
+**4b — Rewrite the query**
+
+Apply at least three of the following optimisations:
+- Convert implicit `FROM A, B, C` to explicit `JOIN ... ON ...`
+- Replace the correlated subquery with a CTE or window function
+- Filter rows early (push predicates down)
+- Avoid `SELECT *` — pick only needed columns
+- Use `EXISTS` instead of `IN` for subqueries against large tables
+
+**4c — Add indexes to support the query**
+
+Write `CREATE INDEX` statements for indexes that would help in production:
+
+```sql
+CREATE INDEX idx_<table>_<columns> ON <table> (<columns>);
+```
+
+For each index, explain in a comment:
+- Which query patterns it accelerates
+- Why this column order (for composite indexes)
+- Estimated trade-off (write cost vs. read benefit)
+
+**4d — Benchmark the optimised query**
+
+Re-run EXPLAIN ANALYZE on your rewritten query and paste the new output. Show:
+- New execution time
+- Speedup factor (e.g. "8.3x faster — 420ms → 51ms")
+- Confirmation that indexes are being used (look for "Index Scan" not "Seq Scan")
+
+**Assessment focus:**
+- Can you read and interpret EXPLAIN ANALYZE output?
+- Are your optimisations justified, not random?
+- Do indexes target real bottlenecks?
+- Is the performance improvement measurable and documented?
 
 ---
 
-## Task 2.4 — Dashboard design
+## Task 2.4 — Dashboard Design
 
-**Tools:** Power BI Desktop, or a hand-drawn mockup submitted as a PDF/image
+**Tools:** Power BI Desktop, OR a hand-drawn/mockup PDF.
 
 Design or build a one-page executive dashboard for project spend performance.
 
-**Requirements — the dashboard must show:**
+**Required visuals:**
 
-| Visual | Description |
-|---|---|
-| KPI cards | Total budget allocated, total actual spend, % over budget projects |
-| Bar chart | Actual spend vs budget by department |
-| Line chart | Monthly transaction spend trend (from Q5 above) |
-| Table | Top 5 projects by budget variance (most over/under budget) |
-| Filter | Slicer by region and project status |
+| Visual | Description | Data source |
+|---|---|---|
+| KPI cards | Total budget, total actual spend, % over-budget projects, total transactions | From cleaned data |
+| Bar chart | Actual spend vs budget by department | Q1 results |
+| Line chart | Monthly transaction spend trend by category | Q5 results |
+| Table | Top 10 projects by budget variance | From projects_clean |
+| Donut chart | Vendor concentration — show top 5 + "Other" | Q3 results |
+| Slicer | Region, project status, year | All |
 
 **If building in Power BI:**
-- Export as `.pbix` and save to `outputs/`
-- Add your name and date to the report title
+- Export as `.pbix` to `outputs/presight_dashboard.pbix`
+- Add a title text box with your name and date
 
 **If submitting a mockup:**
-- Use any tool (Figma, PowerPoint, hand-drawn)
-- Export as PDF to `outputs/dashboard_mockup.pdf`
-- Annotate each visual with what data it shows and why you chose that chart type
+- Annotate each visual with what it shows and why you chose that chart type
+- Use actual numbers from your dataset analysis
+- Export as `outputs/dashboard_mockup.pdf`
 
 ---
 
 ## Completion checklist
 
-- [ ] Five SQL queries written and executable in Section 3
-- [ ] Each query has a comment explaining the approach
-- [ ] ETL pipeline completes without errors
+- [ ] Six SQL queries written, each with approach comment
+- [ ] ETL pipeline runs end-to-end on 50K transactions in < 30 seconds
 - [ ] `outputs/transactions_clean.csv` written
-- [ ] `outputs/pipeline_summary.txt` written with row counts and decisions
-- [ ] Slow query analysed with EXPLAIN output pasted as comment
-- [ ] Rewritten query with explanation of changes
+- [ ] `outputs/pipeline_summary.txt` with row counts, decisions, and run time
+- [ ] Original query's EXPLAIN ANALYZE pasted with bottleneck analysis
+- [ ] Rewritten query achieves measurable speedup (paste before/after timings)
+- [ ] Index DDL written with justification per index
 - [ ] Dashboard `.pbix` or `dashboard_mockup.pdf` in `outputs/`
+- [ ] Q6 correctly uses SCD2 employee history (self-join pattern)
