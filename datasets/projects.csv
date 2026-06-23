@@ -1,0 +1,21 @@
+project_id,project_name,department,status,start_date,end_date,budget,actual_cost,project_manager_id,priority,region
+PRJ001,Smart City Infrastructure,Engineering,Completed,2023-01-10,2023-12-15,500000,487500,EMP003,High,Abu Dhabi
+PRJ002,Data Platform Modernisation,IT,In Progress,2024-03-01,,1200000,640000,EMP007,Critical,Dubai
+PRJ003,HR System Upgrade,HR,Completed,2023-06-01,2023-11-30,150000,162000,EMP012,Medium,Sharjah
+PRJ004,Supply Chain Automation,Operations,On Hold,,,,EMP005,High,Abu Dhabi
+PRJ005,Customer Portal Redesign,Digital,In Progress,2024-07-15,,300000,95000,EMP019,Medium,Dubai
+PRJ006,Internal Audit Digitisation,Finance,Completed,2023-02-01,2023-09-30,80000,78500,EMP003,Low,Abu Dhabi
+PRJ007,AI Forecasting Engine,Data Science,In Progress,2025-01-01,,2500000,410000,EMP007,Critical,Dubai
+PRJ008,Network Security Overhaul,IT,Completed,2023-08-01,2024-02-28,420000,455000,EMP022,High,Abu Dhabi
+PRJ009,Procurement Digitalisation,Operations,In Progress,2024-11-01,,600000,120000,EMP005,Medium,Dubai
+PRJ010,Executive Dashboard,Data Science,Completed,2024-01-15,2024-06-30,95000,91000,EMP019,High,Abu Dhabi
+PRJ011,Cloud Migration Phase 1,IT,Completed,2023-03-01,2023-12-31,900000,870000,EMP007,Critical,Dubai
+PRJ012,Employee Wellness App,HR,In Progress,2025-02-01,,200000,55000,EMP012,Low,Sharjah
+PRJ013,Regulatory Compliance Tool,Legal,On Hold,2024-09-01,,,EMP031,High,Abu Dhabi
+PRJ014,Fleet Management System,Operations,In Progress,2024-06-01,,350000,175000,EMP005,Medium,Dubai
+PRJ015,Predictive Maintenance,Engineering,Not Started,,,,EMP003,High,Abu Dhabi
+PRJ016,Digital Payments Integration,Finance,Completed,2023-10-01,2024-04-30,700000,710000,EMP031,Critical,Dubai
+PRJ017,Knowledge Management Portal,IT,In Progress,2025-03-01,,180000,30000,EMP022,Low,Sharjah
+PRJ018,Carbon Footprint Tracker,Sustainability,Not Started,,,,EMP019,Medium,Dubai
+PRJ019,Legacy System Decommission,IT,In Progress,2024-05-01,,250000,130000,EMP007,High,Abu Dhabi
+PRJ020,Customer Feedback Platform,Digital,Completed,2023-07-01,2024-01-31,120000,118000,EMP019,Medium,Dubai
