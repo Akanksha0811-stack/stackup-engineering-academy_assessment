@@ -30,7 +30,7 @@ Ensure the following are installed before cloning:
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/your-org/stackup-engineering-academy_assessment.git
+git clone https://github.com/Presight-AI/stackup-engineering-academy_assessment.git
 cd stackup-engineering-academy_assessment
 ```
 
@@ -222,7 +222,7 @@ This assessment is aligned to the StackUp Engineering Academy learning pathway. 
 
 ## Questions & Support
 
-If you encounter any issues with the repository setup or have questions about a task, please open a GitHub Issue in this repository using the `question` label. Do not open a PR for questions.
+If you encounter any issues with the repository setup or have questions about a task, please open a GitHub Issue in this repository using the `question` label.
 
 ---
 
