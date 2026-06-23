@@ -25,7 +25,8 @@ Your foundations tasks establish the clean, reliable data layer that every downs
 
 **What to do:**
 
-1. Load `datasets/projects.csv` into a Pandas DataFrame with correct data types
+1. Load `datasets/projects.csv` into a Pandas DataFrame with correct data types.This file includes: project_id, project_name, department, status, start_date, 
+end_date, budget, actual_cost, project_manager_id, priority, region
 2. Parse `start_date` and `end_date` as proper date columns (not strings)
 3. Add three derived columns:
    - `budget_variance` = `actual_cost` minus `budget`
