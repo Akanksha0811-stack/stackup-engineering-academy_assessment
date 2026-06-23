@@ -216,9 +216,7 @@ Power BI Desktop is Windows-only. If you're on Mac or Linux, use one of these:
 | Alternative | Output format | Setup |
 |---|---|---|
 | **Power BI Service** (web) | PDF export | Sign up at https://app.powerbi.com |
-| **Tableau Public** (free) | `.twbx` file | Download from https://public.tableau.com |
-| **Looker Studio** (web) | Shared link | Use Google account at https://lookerstudio.google.com |
-| **Figma / PowerPoint** | Annotated PDF mockup | Use any design tool |
+
 
 Any of the above are accepted for grading. Place output in `outputs/` and reference it in your PR.
 
@@ -450,71 +448,5 @@ Start with **Pillar 1 — Foundations**: `tasks/01_foundations/INSTRUCTIONS.md`
 
 ---
 
-## 🐛 Troubleshooting
 
-### Python issues
 
-| Problem | Fix |
-|---|---|
-| `python: command not found` | Use `python3` instead, or add Python to PATH |
-| `pip install` fails on Windows | Run as Administrator |
-| Import errors after install | Activate your virtual environment first |
-
-### Docker issues
-
-| Problem | Fix |
-|---|---|
-| "Port already in use" | Stop the conflicting service or change ports in `docker-compose.yml` |
-| Services keep restarting | Increase Docker memory to 6+ GB |
-| Slow on Windows | Enable WSL 2 backend in Docker Settings |
-
-### Spark issues
-
-| Problem | Fix |
-|---|---|
-| `JAVA_HOME is not set` | Install Java 17, set JAVA_HOME (see [Java setup](#java-setup-for-pyspark)) |
-| "Python worker failed to connect" | Set `PYSPARK_PYTHON` environment variable to your Python path |
-| `winutils.exe` error on Windows | Download winutils from https://github.com/steveloughran/winutils |
-
-### Database issues
-
-| Problem | Fix |
-|---|---|
-| Cannot connect to PostgreSQL | Wait — first start can take 60 seconds. Check `docker compose ps` |
-| DuckDB CLI not found | It's a separate download from the Python package |
-
-### Kafka issues
-
-| Problem | Fix |
-|---|---|
-| "Broker not available" | Wait for Zookeeper to fully start, then restart Kafka: `docker compose restart kafka` |
-| Connection refused | Check that port 9092 isn't blocked by your firewall |
-
-### Airflow issues
-
-| Problem | Fix |
-|---|---|
-| Webserver shows "Internal Server Error" | Wait 60s for init to complete, then refresh |
-| DAGs not appearing | Place your DAG file in `starter_files/` — it's mounted into `/opt/airflow/dags` |
-| Login fails | Default credentials are `admin/admin`. If broken, recreate via `docker compose restart airflow-init` |
-
-### Git / GitHub issues
-
-| Problem | Fix |
-|---|---|
-| Push rejected — protected branch | Push to a feature branch and open a PR, do not push directly to `main` |
-| Authentication failed | Use a Personal Access Token, not your GitHub password |
-
----
-
-## 🆘 Still stuck?
-
-1. Search the error message — most issues have a known fix
-2. Check the [GitHub Issues](../../../issues) on this repo
-3. Open a new issue with the `question` label
-
-Include the following when asking for help:
-- Your operating system and version
-- The exact command you ran
-- The full error message
-- What you've already tried
