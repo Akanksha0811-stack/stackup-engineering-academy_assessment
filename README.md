@@ -24,7 +24,7 @@ This assessment uses production-scale data so candidates work with realistic vol
 
 ## ⚙️ Getting Started
 
-> 📋 **Before anything else, complete the [PREREQUISITES checklist](PREREQUISITES.md)** — ~2 hours of first-time setup.
+
 
 ### Prerequisites at a glance
 
