@@ -1,41 +1,41 @@
 employee_id,full_name,email,department,role,level,hire_date,salary,manager_id,region,status,years_experience
-EMP001,Ahmed Al Mansoori,ahmed.almansoori@presight.ai,Engineering,Data Engineer,Senior,2019-03-15,28000,EMP003,Abu Dhabi,Active,6
-EMP002,Sara Khalid,sara.khalid@presight.ai,Data Science,Data Analyst,Mid,2021-07-01,18500,EMP007,Dubai,Active,3
-EMP003,Mohammed Al Rashid,mohammed.alrashid@presight.ai,Engineering,Project Manager,Lead,2017-01-10,42000,EMP000,Abu Dhabi,Active,9
-EMP004,Priya Nair,priya.nair@presight.ai,IT,DevOps Engineer,Mid,2022-04-20,22000,EMP022,Dubai,Active,4
-EMP005,Faisal Kattil,faisal.kattil@presight.ai,Operations,Senior Data Engineer,Senior,2018-11-05,31000,EMP003,Dubai,Active,8
-EMP006,Layla Hassan,layla.hassan@presight.ai,HR,HR Analyst,Junior,2023-02-14,14000,EMP012,Sharjah,Active,1
-EMP007,Taha Shah,taha.shah@presight.ai,Data Science,BI Engineer,Lead,2016-08-22,45000,EMP000,Dubai,Active,11
-EMP008,Ravi Kumar,ravi.kumar@presight.ai,Finance,Financial Analyst,Mid,2020-05-30,19500,EMP031,Abu Dhabi,Active,5
-EMP009,Noura Al Zaabi,noura.alzaabi@presight.ai,Digital,UX Designer,Senior,2019-09-11,26000,EMP019,Abu Dhabi,Active,7
-EMP010,James Okafor,james.okafor@presight.ai,IT,Cloud Architect,Senior,2018-03-01,35000,EMP022,Dubai,Active,8
-EMP011,Fatima Malik,fatima.malik@presight.ai,Engineering,Data Modeler,Mid,2021-12-01,21000,EMP003,Abu Dhabi,Active,4
-EMP012,Poonam Dixit,poonam.dixit@presight.ai,HR,Lead Data Engineer,Lead,2015-06-15,47000,EMP000,Sharjah,Active,12
-EMP013,Carlos Rivera,carlos.rivera@presight.ai,Data Science,ML Engineer,Senior,2020-01-20,33000,EMP007,Dubai,Active,6
-EMP014,Aisha Al Nuaimi,aisha.alnuaimi@presight.ai,Legal,Compliance Analyst,Mid,2022-08-09,17500,EMP031,Abu Dhabi,Active,3
-EMP015,Suneel Venkataiah,suneel.venkataiah@presight.ai,Engineering,Senior Data Engineer,Senior,2017-10-30,30000,EMP003,Abu Dhabi,Active,9
-EMP016,Dana Al Farsi,dana.alfarsi@presight.ai,Digital,Product Manager,Senior,2019-04-17,29000,EMP019,Dubai,Active,7
-EMP017,Nagendra Varada,nagendra.varada@presight.ai,Data Science,Senior Data Analyst,Senior,2018-07-23,27500,EMP007,Abu Dhabi,Active,8
-EMP018,Lin Wei,lin.wei@presight.ai,IT,Data Engineer,Mid,2022-11-01,20000,EMP022,Dubai,Active,3
-EMP019,Mohammed Basha,mohammed.basha@presight.ai,Digital,Senior Data Engineer,Senior,2018-02-14,32000,EMP003,Dubai,Active,8
-EMP020,Hessa Al Ketbi,hessa.alketbi@presight.ai,Finance,Budget Analyst,Junior,2024-01-08,13500,EMP031,Abu Dhabi,Active,1
-EMP021,Sanjay Subair,sanjay.subair@presight.ai,Data Science,BI Specialist,Senior,2019-05-05,26500,EMP007,Abu Dhabi,Active,7
-EMP022,Dhaval Gupta,dhaval.gupta@presight.ai,IT,Data Engineer,Mid,2021-03-22,21500,EMP007,Dubai,Active,4
-EMP023,Amira Saleh,amira.saleh@presight.ai,Sustainability,Data Analyst,Junior,2024-03-01,14500,EMP007,Dubai,Active,1
-EMP024,Omar Abdulla,,Operations,Operations Analyst,Mid,2020-09-14,18000,EMP005,Abu Dhabi,Active,5
-EMP025,Meera Pillai,meera.pillai@presight.ai,Engineering,Data Engineer,Mid,2021-06-28,20500,EMP003,Sharjah,Active,4
-EMP026,Khalid Al Shamsi,khalid.alshamsi@presight.ai,IT,Network Engineer,Senior,2017-12-10,28500,EMP022,Abu Dhabi,Inactive,9
-EMP027,Zara Hussain,zara.hussain@presight.ai,Data Science,Data Scientist,Senior,2019-11-19,34000,EMP007,Dubai,Active,7
-EMP028,Raj Patel,raj.patel@presight.ai,Finance,Data Analyst,Mid,2022-07-04,19000,EMP031,Dubai,Active,3
-EMP029,Maryam Al Bloushi,maryam.albloushi@presight.ai,HR,Learning & Development,Mid,2021-02-16,17000,EMP012,Abu Dhabi,Active,4
-EMP030,Tom Eriksson,tom.eriksson@presight.ai,Engineering,Platform Engineer,Senior,2018-09-03,31500,EMP003,Dubai,Active,8
-EMP031,Sadia Islam,sadia.islam@presight.ai,Finance,Finance Director,Director,-999,52000,EMP000,Abu Dhabi,Active,15
-EMP032,Wei Zhang,wei.zhang@presight.ai,Data Science,Data Engineer,Junior,2024-05-01,15000,EMP007,Dubai,Active,1
-EMP033,Nadia Al Hosani,nadia.alhosani@presight.ai,Legal,Legal Analyst,Mid,2022-10-12,18500,EMP031,Sharjah,Active,3
-EMP034,Arun Menon,arun.menon@presight.ai,IT,Data Engineer,Senior,2019-08-27,29000,EMP022,Dubai,Active,7
-EMP035,Hana Khalil,hana.khalil@presight.ai,Digital,Content Strategist,Junior,99999-01-01,13000,EMP019,Dubai,Active,2
-EMP036,Ibrahim Al Marzouqi,ibrahim.almarzouqi@presight.ai,Operations,Supply Chain Analyst,Mid,2021-04-05,19500,EMP005,Abu Dhabi,Active,4
-EMP037,Kavya Reddy,kavya.reddy@presight.ai,Data Science,BI Developer,Mid,2022-01-17,21000,EMP007,Dubai,Active,3
-EMP038,Tariq Bin Laden,,Engineering,Data Engineer,Junior,2023-11-01,15500,EMP003,Abu Dhabi,Active,2
-EMP039,Sophie Martin,sophie.martin@presight.ai,Digital,Digital Analyst,Senior,2018-06-11,27000,EMP019,Dubai,Active,8
-EMP040,Abdulla Al Qubaisi,abdulla.alqubaisi@presight.ai,IT,IT Manager,Lead,2016-02-29,44000,EMP000,Abu Dhabi,Inactive,11
+EMP001,Yusuf Ibrahim,yusuf.ibrahim@presight.ai,Engineering,Data Engineer,Senior,2019-03-15,28000,EMP003,Abu Dhabi,Active,6
+EMP002,Aaliyah Rahman,aaliyah.rahman@presight.ai,Data Science,Data Analyst,Mid,2021-07-01,18500,EMP007,Dubai,Active,3
+EMP003,Khalifa Al Suwaidi,khalifa.alsuwaidi@presight.ai,Engineering,Project Manager,Lead,2017-01-10,42000,EMP000,Abu Dhabi,Active,9
+EMP004,Anjali Sharma,anjali.sharma@presight.ai,IT,DevOps Engineer,Mid,2022-04-20,22000,EMP022,Dubai,Active,4
+EMP005,Rashid Al Khaja,rashid.alkhaja@presight.ai,Operations,Senior Data Engineer,Senior,2018-11-05,31000,EMP003,Dubai,Active,8
+EMP006,Mira Yousef,mira.yousef@presight.ai,HR,HR Analyst,Junior,2023-02-14,14000,EMP012,Sharjah,Active,1
+EMP007,Karthik Iyer,karthik.iyer@presight.ai,Data Science,BI Engineer,Lead,2016-08-22,45000,EMP000,Dubai,Active,11
+EMP008,Vikram Joshi,vikram.joshi@presight.ai,Finance,Financial Analyst,Mid,2020-05-30,19500,EMP031,Abu Dhabi,Active,5
+EMP009,Reem Al Suwaidi,reem.alsuwaidi@presight.ai,Digital,UX Designer,Senior,2019-09-11,26000,EMP019,Abu Dhabi,Active,7
+EMP010,Daniel Okonkwo,daniel.okonkwo@presight.ai,IT,Cloud Architect,Senior,2018-03-01,35000,EMP022,Dubai,Active,8
+EMP011,Yasmin Saeed,yasmin.saeed@presight.ai,Engineering,Data Modeler,Mid,2021-12-01,21000,EMP003,Abu Dhabi,Active,4
+EMP012,Anika Verma,anika.verma@presight.ai,HR,Lead Data Engineer,Lead,2015-06-15,47000,EMP000,Sharjah,Active,12
+EMP013,Mateo Hernandez,mateo.hernandez@presight.ai,Data Science,ML Engineer,Senior,2020-01-20,33000,EMP007,Dubai,Active,6
+EMP014,Mariam Al Hashimi,mariam.alhashimi@presight.ai,Legal,Compliance Analyst,Mid,2022-08-09,17500,EMP031,Abu Dhabi,Active,3
+EMP015,Rohan Krishnan,rohan.krishnan@presight.ai,Engineering,Senior Data Engineer,Senior,2017-10-30,30000,EMP003,Abu Dhabi,Active,9
+EMP016,Lara Mansour,lara.mansour@presight.ai,Digital,Product Manager,Senior,2019-04-17,29000,EMP019,Dubai,Active,7
+EMP017,Deepak Pillai,deepak.pillai@presight.ai,Data Science,Senior Data Analyst,Senior,2018-07-23,27500,EMP007,Abu Dhabi,Active,8
+EMP018,Min Chen,min.chen@presight.ai,IT,Data Engineer,Mid,2022-11-01,20000,EMP022,Dubai,Active,3
+EMP019,Salim Mahmoud,salim.mahmoud@presight.ai,Digital,Senior Data Engineer,Senior,2018-02-14,32000,EMP003,Dubai,Active,8
+EMP020,Hanan Al Naqbi,hanan.alnaqbi@presight.ai,Finance,Budget Analyst,Junior,2024-01-08,13500,EMP031,Abu Dhabi,Active,1
+EMP021,Arjun Bhatt,arjun.bhatt@presight.ai,Data Science,BI Specialist,Senior,2019-05-05,26500,EMP007,Abu Dhabi,Active,7
+EMP022,Nikhil Desai,nikhil.desai@presight.ai,IT,Data Engineer,Mid,2021-03-22,21500,EMP007,Dubai,Active,4
+EMP023,Salma Khoury,salma.khoury@presight.ai,Sustainability,Data Analyst,Junior,2024-03-01,14500,EMP007,Dubai,Active,1
+EMP024,Bilal Hamdan,,Operations,Operations Analyst,Mid,2020-09-14,18000,EMP005,Abu Dhabi,Active,5
+EMP025,Divya Kapoor,divya.kapoor@presight.ai,Engineering,Data Engineer,Mid,2021-06-28,20500,EMP003,Sharjah,Active,4
+EMP026,Sami Al Dhaheri,sami.aldhaheri@presight.ai,IT,Network Engineer,Senior,2017-12-10,28500,EMP022,Abu Dhabi,Inactive,9
+EMP027,Leena Farooq,leena.farooq@presight.ai,Data Science,Data Scientist,Senior,2019-11-19,34000,EMP007,Dubai,Active,7
+EMP028,Aakash Mehta,aakash.mehta@presight.ai,Finance,Data Analyst,Mid,2022-07-04,19000,EMP031,Dubai,Active,3
+EMP029,Huda Al Mazrouei,huda.almazrouei@presight.ai,HR,Learning & Development,Mid,2021-02-16,17000,EMP012,Abu Dhabi,Active,4
+EMP030,Lucas Andersen,lucas.andersen@presight.ai,Engineering,Platform Engineer,Senior,2018-09-03,31500,EMP003,Dubai,Active,8
+EMP031,Roshan Kapadia,roshan.kapadia@presight.ai,Finance,Finance Director,Director,-999,52000,EMP000,Abu Dhabi,Active,15
+EMP032,Hiroshi Tanaka,hiroshi.tanaka@presight.ai,Data Science,Data Engineer,Junior,2024-05-01,15000,EMP007,Dubai,Active,1
+EMP033,Eman Al Rumaithi,eman.alrumaithi@presight.ai,Legal,Legal Analyst,Mid,2022-10-12,18500,EMP031,Sharjah,Active,3
+EMP034,Sanjay Murthy,sanjay.murthy@presight.ai,IT,Data Engineer,Senior,2019-08-27,29000,EMP022,Dubai,Active,7
+EMP035,Layla Najjar,layla.najjar@presight.ai,Digital,Content Strategist,Junior,99999-01-01,13000,EMP019,Dubai,Active,2
+EMP036,Hamad Al Mansoori,hamad.almansoori@presight.ai,Operations,Supply Chain Analyst,Mid,2021-04-05,19500,EMP005,Abu Dhabi,Active,4
+EMP037,Pooja Nambiar,pooja.nambiar@presight.ai,Data Science,BI Developer,Mid,2022-01-17,21000,EMP007,Dubai,Active,3
+EMP038,Adam Saleh,,Engineering,Data Engineer,Junior,2023-11-01,15500,EMP003,Abu Dhabi,Active,2
+EMP039,Camille Laurent,camille.laurent@presight.ai,Digital,Digital Analyst,Senior,2018-06-11,27000,EMP019,Dubai,Active,8
+EMP040,Saif Al Marri,saif.almarri@presight.ai,IT,IT Manager,Lead,2016-02-29,44000,EMP000,Abu Dhabi,Inactive,11
