@@ -71,15 +71,6 @@ For first-time setup, follow the master guide:
 
 → **[docs/setup/SETUP_GUIDE.md](docs/setup/SETUP_GUIDE.md)**
 
-Component-specific guides in [docs/setup/](docs/setup/):
-- [Python environment + virtualenv + Java](docs/setup/PYTHON_SETUP.md)
-- [Git & GitHub workflow](docs/setup/GIT_GITHUB_SETUP.md)
-- [Docker Desktop setup](docs/setup/DOCKER_SETUP.md)
-- [Apache Spark + PySpark](docs/setup/SPARK_SETUP.md)
-- [Power BI + alternatives for Mac/Linux](docs/setup/POWER_BI_SETUP.md)
-
-**Total setup time:** ~100 minutes for first-time setup (~2 hours).
-
 ---
 
 ### Quick start (after prerequisites installed)
