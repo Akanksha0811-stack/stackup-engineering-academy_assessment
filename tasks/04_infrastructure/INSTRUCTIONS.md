@@ -1,86 +1,81 @@
 # Pillar 4 — Infrastructure & Governance
 
-> **Time allocation:** ~3 hours  
+> **Time allocation:** ~3.5 hours  
 > **Starter files:** `starter_files/etl_starter.py` (Task 4.3), new files you create
 
 ---
 
 ## Context
 
-Your pipeline works. Now it needs to be deployable, maintainable, and compliant. The DevOps team needs the ETL pipeline containerised. The Data Governance team needs a formal classification and ownership document. And the Data Quality team needs an automated check framework they can extend without touching pipeline code.
+Your pipeline works on real volumes — 1,000 employees, 500 projects, 50,000 transactions, 100,000 events. Now it needs to be deployable, maintainable, and compliant.
+
+DevOps wants the ETL containerised. Data Governance needs a formal classification document. Data Quality wants an automated check framework they can extend without touching pipeline code.
 
 ---
 
 ## Task 4.1 — Docker: Containerise the ETL pipeline
 
-**What to build:**
-
-Create a `Dockerfile` in the root of the repository that packages and runs the ETL pipeline from Task 2.2.
+Create a `Dockerfile` packaging the ETL from Task 2.2.
 
 **Requirements:**
 
-1. **Base image:** Use `python:3.11-slim`
+1. **Base image:** `python:3.11-slim`
 2. **Dependencies:** Install from `requirements.txt`
-3. **Entry point:** Running the container must execute `etl_starter.py` automatically
-4. **Output mounting:** The container must write outputs to a mounted volume so results are accessible on the host after the container exits
-5. **Environment variables:** The pipeline must read `DATA_DIR` and `OUTPUT_DIR` from environment variables (with sensible defaults if not set)
+3. **Entry point:** Container automatically executes `etl_starter.py`
+4. **Output mounting:** Writes to mounted volume — results accessible on host
+5. **Environment variables:** Pipeline reads `DATA_DIR` and `OUTPUT_DIR` from env (with defaults)
+6. **Multi-stage build (bonus):** Use a builder stage to reduce final image size
 
 **Files to create:**
-- `Dockerfile` — in the repo root
-- `.dockerignore` — exclude `outputs/`, `.git/`, `__pycache__/`, and `*.pyc`
+- `Dockerfile` — repo root
+- `.dockerignore` — exclude `outputs/`, `.git/`, `__pycache__/`, `*.pyc`, `venv/`
 
-**Test your container:**
+**Test:**
 ```bash
 docker build -t presight-etl .
-docker run -v $(pwd)/outputs:/app/outputs presight-etl
+time docker run -v $(pwd)/outputs:/app/outputs presight-etl
 ```
 
-The `outputs/` folder on your host machine should contain the pipeline results after the container exits.
+Measure execution time. The container should process all 50K transactions in under 30 seconds.
 
-**Bonus:** Add a `docker-compose.override.yml` that mounts the datasets directory and passes environment variables, so the pipeline can be run with `docker-compose run etl`
-
----
+**Bonus:** Add `docker-compose.override.yml` so pipeline runs via `docker-compose run etl`.
 
 **Assessment focus:**
 - Container builds without errors
-- Output files appear in the mounted volume after the container runs
-- `.dockerignore` is correct — image does not contain unnecessary files
+- Output files appear in mounted volume after run
+- `.dockerignore` is correct
 - Environment variable handling is clean
+- Execution time is reasonable
 
 ---
 
-## Task 4.2 — Data Governance: Classification, ownership, and retention policy
+## Task 4.2 — Data Governance Document
 
-**What to produce:**
-
-Write a data governance document for the Presight project management data. Save it as `outputs/data_governance_document.md`.
-
-The document must cover all three datasets: `projects`, `employees`, and `transactions`.
+Write `outputs/data_governance_document.md` covering all four datasets (projects, employees, transactions, salary history).
 
 ---
 
 **Section 1 — Data inventory**
 
-Complete the following table for each dataset:
-
-| Dataset | Source system | Format | Update frequency | Volume estimate |
-|---|---|---|---|---|
-| projects | | | | |
-| employees | | | | |
-| transactions | | | | |
+| Dataset | Source system | Format | Update frequency | Volume estimate | Daily growth |
+|---|---|---|---|---|---|
+| projects | | | | | |
+| employees | | | | | |
+| transactions | | | | | |
+| employees_salary_history | | | | | |
 
 ---
 
 **Section 2 — Data classification**
 
-Classify each column in each dataset using the scheme below:
+Classify each column in each dataset:
 
 | Classification | Definition |
 |---|---|
-| **Public** | Non-sensitive, can be shared externally |
-| **Internal** | For internal use only, no regulatory requirement |
+| **Public** | Non-sensitive, shareable externally |
+| **Internal** | Internal use only, no regulatory requirement |
 | **Confidential** | Sensitive business data — restricted access |
-| **Personal** | Contains personally identifiable information (PII) — regulatory requirements apply |
+| **Personal (PII)** | Personal identifiable information — regulatory requirements apply |
 
 For each PII column, state which regulation applies (GDPR, UAE PDPL, or both).
 
@@ -88,75 +83,86 @@ For each PII column, state which regulation applies (GDPR, UAE PDPL, or both).
 
 **Section 3 — Data ownership**
 
-Define ownership for each dataset:
-
 | Dataset | Data Owner (role) | Data Steward (role) | Access approver |
 |---|---|---|---|
 
-Explain the difference between a Data Owner and a Data Steward in your own words.
+Explain Owner vs. Steward in your own words.
 
 ---
 
 **Section 4 — Retention policy**
 
-For each dataset, define:
-- Retention period (how long should data be kept?)
-- Justification (business need, regulatory requirement, or both)
+For each dataset:
+- Retention period
+- Justification (business need + regulatory)
 - Disposal method (delete, anonymise, archive)
-- Who is responsible for enforcing the policy
+- Who enforces the policy
 
-Consider: do financial transaction records have different retention requirements than employee HR data?
+**Special consideration:** `employees_salary_history.csv` contains historical salary changes. UAE labour law and tax regulations may require longer retention than typical employee data. Address this.
 
 ---
 
-**Section 5 — Access control recommendations**
+**Section 5 — Access control**
 
-Recommend role-based access for the following personas:
-
-| Persona | Projects | Employees | Transactions |
-|---|---|---|---|
-| Data Engineer | | | |
-| BI Analyst | | | |
-| Finance Team | | | |
-| HR Team | | | |
-| Executive / Director | | | |
+| Persona | Projects | Employees | Transactions | Salary History |
+|---|---|---|---|---|
+| Data Engineer | | | | |
+| BI Analyst | | | | |
+| Finance Team | | | | |
+| HR Team | | | | |
+| Executive | | | | |
 
 Access levels: `None`, `Read`, `Read + Write`, `Full (including delete)`
+
+**Note:** Salary history requires especially careful access controls — most personas should have NO access. Justify your decisions.
+
+---
+
+**Section 6 — Data lineage**
+
+Diagram (mermaid or ASCII) the flow:
+- Source systems → raw datasets → cleaned datasets → warehouse → reporting
+
+Show where transformations happen and where quality checks are applied.
 
 ---
 
 **Assessment focus:**
-- Completeness — all columns classified, all sections filled
-- Quality of reasoning — are decisions justified?
+- All columns classified across all 4 datasets
+- PII columns explicitly tagged with regulation
+- Retention reasoning addresses both business need and regulation
+- Access controls reflect the principle of least privilege
 - Awareness of UAE PDPL in addition to GDPR
-- Practical, implementable recommendations (not just theory)
 
 ---
 
 ## Task 4.3 — Data Quality Framework
 
-**File:** `starter_files/etl_starter.py` → function `run_data_quality_checks()`
+**File:** `starter_files/etl_starter.py` → `run_data_quality_checks()`
 
-Build a reusable data quality check framework that the team can extend by adding new rules without modifying pipeline code.
+Build a reusable, configurable framework. The team must extend it by adding rules — not by modifying pipeline code.
 
-**Minimum requirements — implement at least five checks:**
+**Minimum 6 checks required:**
 
 | Check | Type | Description |
 |---|---|---|
-| Completeness | Column-level | % of non-null values per column; flag columns below threshold |
-| Uniqueness | Table-level | Verify primary key columns contain no duplicates |
-| Validity — numeric | Column-level | Numeric columns within expected min/max range |
-| Validity — date | Column-level | Date columns contain valid, non-future dates where expected |
-| Consistency | Cross-column | `start_date` must be before `end_date`; `actual_cost` must be ≥ 0 |
+| Completeness | Column-level | % non-null per column; flag below threshold |
+| Uniqueness | Table-level | PK columns contain no duplicates |
+| Validity — numeric | Column-level | Values within expected min/max range |
+| Validity — date | Column-level | Dates valid, non-future where expected |
+| Consistency | Cross-column | `start_date < end_date`; `actual_cost >= 0`; salary level matches role level |
+| Referential integrity | Cross-table | FKs exist in referenced table (e.g. `project_manager_id` exists in employees) |
 
-**Bonus checks (optional):**
-- Referential integrity — `project_manager_id` in projects exists in employees
-- Distribution check — flag if more than 30% of a column's values are the same (potential data loading error)
-- Freshness check — flag if the most recent `transaction_date` is more than 30 days old
+**Bonus checks:**
+- **Distribution check** — flag if > 30% of a column has the same value (data loading error)
+- **Freshness check** — flag if max transaction_date older than 30 days
+- **Outlier check** — flag if any value is > 3 standard deviations from mean
+
+---
 
 **Framework design requirements:**
 
-The framework must be configurable — rules and thresholds should be defined in a config dict or file, not hardcoded. For example:
+Rules and thresholds must be **defined in a config dict or YAML file**, not hardcoded:
 
 ```python
 DQ_CONFIG = {
@@ -168,37 +174,74 @@ DQ_CONFIG = {
             "actual_cost": {"min": 0, "max": 10_000_000}
         },
         "date_columns": ["start_date", "end_date"],
-        "consistency_rules": [("start_date", "<", "end_date")]
+        "consistency_rules": [
+            {"type": "before", "columns": ["start_date", "end_date"]},
+            {"type": "non_negative", "column": "actual_cost"}
+        ],
+        "foreign_keys": {
+            "project_manager_id": ("employees", "employee_id")
+        }
+    },
+    "employees": {
+        "completeness_threshold": 0.85,
+        "pk_columns": ["employee_id"],
+        "numeric_ranges": {
+            "salary": {"min": 10000, "max": 100000},
+            "years_experience": {"min": 0, "max": 50}
+        },
+        ...
     }
 }
 ```
 
 **Return format:**
 
-The function must return a dictionary of results:
-
 ```python
 {
-    "completeness": {"status": "PASS", "details": {"project_id": 1.0, "budget": 0.95, ...}},
-    "uniqueness":   {"status": "PASS", "details": "project_id: 20 unique / 20 total"},
-    "validity":     {"status": "FAIL", "details": "budget: 1 value(s) below minimum (0)"},
-    ...
+    "dataset_name": "projects",
+    "checks_run": 6,
+    "checks_passed": 4,
+    "checks_failed": 2,
+    "results": {
+        "completeness": {
+            "status": "PASS",
+            "details": {"project_id": 1.0, "budget": 0.94, ...},
+            "failed_columns": []
+        },
+        "uniqueness": {
+            "status": "PASS",
+            "details": "project_id: 500 unique / 500 total"
+        },
+        "validity_numeric": {
+            "status": "FAIL",
+            "details": "budget: 2 values below minimum (0), actual_cost: 1 value above maximum"
+        },
+        ...
+    }
 }
 ```
 
-Log a `WARNING` for every `FAIL` result.
+Log `WARNING` for every `FAIL`.
+
+**Bonus — Output a markdown report:**
+
+Write `outputs/dq_report_{dataset}.md` for each dataset with check results in a human-readable format.
 
 ---
 
 ## Completion checklist
 
 - [ ] `Dockerfile` builds successfully
-- [ ] Container runs and writes outputs to mounted volume
-- [ ] `.dockerignore` excludes outputs, git, and cache files
-- [ ] `outputs/data_governance_document.md` covers all three datasets
-- [ ] All columns classified with correct level and regulation noted for PII
-- [ ] Retention policy defined and justified for each dataset
-- [ ] DQ framework implements minimum 5 checks
-- [ ] Framework is configurable — rules defined in config, not hardcoded
-- [ ] Return format matches specification above
+- [ ] Container runs, processes 50K transactions, writes outputs to mounted volume
+- [ ] Execution time measured and documented
+- [ ] `.dockerignore` excludes outputs, git, cache
+- [ ] `outputs/data_governance_document.md` covers all 4 datasets
+- [ ] All columns classified with PII regulation noted
+- [ ] Retention policy addresses salary history separately
+- [ ] Access controls reflect least privilege
+- [ ] Data lineage diagram included
+- [ ] DQ framework implements minimum 6 checks
+- [ ] Framework is configurable (rules in config, not code)
+- [ ] Return format matches specification
 - [ ] WARN logged for every failing check
+- [ ] DQ reports written as markdown per dataset
