@@ -135,7 +135,6 @@ stackup-engineering-academy_assessment/
 │   ├── PYTHON_SETUP.md
 │   ├── GIT_GITHUB_SETUP.md
 │   ├── DOCKER_SETUP.md
-│   ├── SPARK_SETUP.md
 │   └── POWER_BI_SETUP.md
 │
 ├── outputs/                        # Your work goes here (gitignored)
