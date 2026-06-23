@@ -125,8 +125,6 @@ stackup-engineering-academy_assessment/
 │       ├── events_2025_02.jsonl
 │       └── ... (10 more)
 │
-├── scripts/
-│   └── generate_data.py            # Reproducible data generator
 │
 ├── tasks/                          # Assessment instructions
 │   ├── 01_foundations/INSTRUCTIONS.md
