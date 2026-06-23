@@ -24,6 +24,19 @@ Ensure the following are installed before cloning:
 > Optional: Scala 2.x if attempting the Scala bonus tasks.
 
 ---
+### 📚 Detailed setup guides
+
+If you're setting up your environment for the first time, follow the master setup guide:
+
+→ **[docs/setup/SETUP_GUIDE.md](docs/setup/SETUP_GUIDE.md)**
+
+Component-specific guides are available in [docs/setup/](docs/setup/):
+- Python environment + virtual environments + Java for Spark
+- Git & GitHub workflow with PAT/SSH authentication
+- Docker Desktop with troubleshooting
+- Power BI Desktop with Mac/Linux alternatives
+
+Total setup time: ~75 minutes for first-time setup.
 
 ### Setup Instructions
 
