@@ -170,11 +170,19 @@ You need a SQL engine to complete Tasks 1.2, 2.1, and 2.3.
 
 Lightweight, embedded SQL engine. No server setup.
 
+DuckDB generally requires Python 3.8+
+
 ```bash
 pip install duckdb
 ```
 
-Test it:
+or
+
+```bash
+python3 -m pip install duckdb
+```
+
+Test it by running below command on terminal:
 ```python
 python -c "import duckdb; print(duckdb.query('SELECT 42').to_df())"
 ```
