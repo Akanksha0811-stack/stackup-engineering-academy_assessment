@@ -134,8 +134,29 @@ stackup-engineering-academy_assessment/
 │   ├── DOCKER_SETUP.md
 │   └── POWER_BI_SETUP.md
 │
-├── outputs/                        # Your work goes here (gitignored)
-├── solutions/                      # Reviewer use only
+├── solutions/                      # ⭐ YOUR CODE GOES HERE
+│   ├── 01_foundations/             # Pillar 1 work
+│   │   ├── etl_pipeline.py
+│   │   ├── data_model.sql
+│   │   └── notebooks/              # Jupyter notebooks (if used)
+│   │       └── exploration.ipynb
+│   ├── 02_sql_and_viz/             # Pillar 2 work
+│   │   ├── queries.sql
+│   │   ├── etl_full.py
+│   │   └── query_optimization.sql
+│   ├── 03_big_data/                # Pillar 3 work
+│   │   ├── spark_pipeline.py
+│   │   ├── kafka_streaming.py
+│   │   └── airflow_dag.py
+│   ├── 04_infrastructure/          # Pillar 4 work
+│   │   ├── Dockerfile
+│   │   ├── data_governance.md
+│   │   └── dq_framework.py
+│   └── SUBMISSION_NOTES.md         # Your summary, assumptions, decisions
+│
+├── outputs/                        # Generated artifacts (gitignored)
+│                                   # CSVs, reports, dashboards, Parquet files
+│
 │
 ├── docker-compose.yml              # Local services (Kafka, Airflow, PostgreSQL)
 ├── requirements.txt                # Python dependencies
