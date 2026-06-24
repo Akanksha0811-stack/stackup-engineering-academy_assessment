@@ -140,12 +140,16 @@ newgrp docker
 5. Click **Apply & Restart**
 
 ### Verify
+Run below command on Docker terminal:
 ```bash
 docker --version
 docker compose version
 docker run hello-world    # Downloads a test image
 ```
 
+Output of above  would be like:
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
 ### Troubleshooting
 
 | Problem | Fix |
