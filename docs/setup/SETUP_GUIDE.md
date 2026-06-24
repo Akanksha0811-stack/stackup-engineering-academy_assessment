@@ -269,6 +269,19 @@ Install via the Extensions panel (`Ctrl+Shift+X`):
 
 ## 7. Clone the repo
 
+Before cloning the repo, set your Git hub token to clone the repo at your local using below steps:
+Go to GitHub → Settings
+Developer Settings → Personal access tokens
+Generate new token
+Select scope: repo (important for private repos)
+
+<IMPORTANT:Save this generated token as it is one time visible in your GIt account>
+
+When prompted after git clone:
+
+Username → your GitHub username
+Password → Paste TOKEN (not your GitHub password)
+
 ```bash
 # Navigate to where you want to keep the project
 cd ~/projects     # or wherever you keep code
