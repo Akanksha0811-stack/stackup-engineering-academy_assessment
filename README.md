@@ -244,35 +244,6 @@ git push -u origin candidate/your-name
   - Bonus tasks attempted
   - Total time spent
 
----
-
-
-## What Each Task Outputs
-
-| Task | Output Location | Format | Size | Notes |
-|------|-----------------|--------|------|-------|
-| 1.1 | outputs/projects_clean.csv | CSV | 500 rows × 15 cols | Must include derived columns: budget_variance, is_over_budget, duration_days, status_category, risk_flag |
-| 1.2 | starter_files/data_model_starter.sql Section 1 | SQL DDL | 6 tables | dim_date, dim_project, dim_employee (SCD2), dim_vendor, bridge_employee_project, fact_transactions |
-| 1.3 | outputs/employees_clean.csv | CSV | 1000 rows | All data quality issues fixed; logging shows what was fixed |
-| 2.1 | starter_files/data_model_starter.sql Section 3 | SQL queries × 6 | - | Q1-Q6 with comments explaining approach. Q6 uses SCD2 self-join |
-| 2.2 | outputs/transactions_clean.csv | CSV | 50K rows | Enriched with project names, approver names, derived columns |
-| 2.2 | outputs/pipeline_summary.txt | Text | 1 file | Run timestamp, before/after row counts, decisions, execution time |
-| 2.3 | starter_files/data_model_starter.sql Section 4 | SQL + EXPLAIN | Comments | Original EXPLAIN ANALYZE, bottleneck analysis, optimized query, CREATE INDEX statements, speedup factor |
-| 2.4 | outputs/presight_dashboard.pbix | Power BI | 1 file | OR outputs/dashboard_mockup.pdf if not using Power BI |
-| 3.1 | outputs/spark/project_activity_summary/ | Parquet | 500 partitions | 4 tables total (project, user, escalation, daily_volume summaries) |
-| 3.1 | outputs/spark/user_activity_summary/ | Parquet | 1000+ partitions | - |
-| 3.1 | outputs/spark/escalation_log/ | Parquet | ~200 partitions | - |
-| 3.1 | outputs/spark/daily_event_volume/ | Parquet | 365×15 partitions | Partitioned by event_date |
-| 3.2 | outputs/kafka/summary.json | JSON | 1 file | Total events consumed, event_type counts, critical escalations forwarded |
-| 3.3 | starter_files/airflow_dag_starter.py | Python | DAG code | (Or mounted in docker-compose; no output file) |
-| 4.1 | Dockerfile (repo root) | Dockerfile | 1 file | Builds & runs etl_starter.py with mounted volumes |
-| 4.1 | .dockerignore (repo root) | Text | 1 file | Excludes outputs/, .git/, __pycache__, *.pyc |
-| 4.2 | outputs/data_governance_document.md | Markdown | 1 file | Covers projects, employees, transactions, **employees_salary_history** |
-| 4.3 | outputs/dq_report_projects.md | Markdown | Optional | Check results in readable format (bonus) |
-| 4.3 | outputs/dq_report_employees.md | Markdown | Optional | Check results in readable format (bonus) |
-| 4.3 | outputs/dq_report_transactions.md | Markdown | Optional | Check results in readable format (bonus) |
-
----
 
 
 ## 📊 Assessment Criteria
