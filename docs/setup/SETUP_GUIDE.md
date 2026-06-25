@@ -485,7 +485,7 @@ print('PySpark:', pyspark.__version__)
 ### Database
 ```bash
 # DuckDB
-python -c "import duckdb; print(duckdb.query('SELECT \"DuckDB works\" as msg').to_df())"
+python -c "import duckdb; print(duckdb.query(\"SELECT 'DuckDB works' as msg\").to_df())"
 
 # OR PostgreSQL (if using Docker)
 docker exec presight-postgres psql -U presight -d airflow -c "SELECT 'PostgreSQL works' AS msg;"
