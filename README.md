@@ -170,7 +170,22 @@ stackup-engineering-academy_assessment/
 
 ## 🎯 Assessment Tasks Overview
 
-Each pillar has detailed instructions in its respective `INSTRUCTIONS.md`. Summary:
+1.Each pillar has detailed instructions in its respective `INSTRUCTIONS.md`. Summary:
+2. Refer starter_files to refer how to create the solutions for every section mentioned in `INSTRUCTIONS.md`. 
+
+### NOTE: DO NOT WRITE YOUR CODE IN THESE STARTER_FILES THEY ARE MAINLY FOR READ ONLY PURPOSE. ALL YOUR SOLUTIOS SHOULD BE ADDED IN SOLUTIONS FOLDER>
+
+3. all the solutions for every section to be added in solutions folder using below folder structure:
+solutions/submissions/<trainee_name>/01_foundations/<python_file.py> or <sql_file.py>
+solutions/submissions/<trainee_name>/02_sql_and_viz/<python_file.py> or <sql_file.py>
+solutions/submissions/<trainee_name>/03_big_data/<python_file.py> or <sql_file.py>
+solutions/submissions/<trainee_name>/04_infrastructure/<python_file.py> or <sql_file.py>
+
+4. ALl the output generated as part fo your solutions should be placed by following below folder structure:
+outputs/results/<trainee_name>/01_foundations/<output files/diagram..etc>
+outputs/results/<trainee_name>/02_sql_and_viz/<output files/diagram..etc>
+outputs/results/<trainee_name>/03_big_datas/<output files/diagram..etc>
+outputs/results/<trainee_name>/04_infrastructure/<output files/diagram..etc>
 
 ---
 
