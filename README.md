@@ -75,6 +75,9 @@ For first-time setup, follow the master guide:
 
 ### Quick start (after prerequisites installed)
 
+Below steps are mentioned in detail in SETUP_GUIDE.md hence follow from their to avoid any errors.
+Once Git clone , local branch creation and python venv setup with all the requirment.txt package are done you can start the docker service as mentioned in below step 4 . After that you can start with every pillar one by one.
+
 ```bash
 # 1. Clone the repo
 git clone https://github.com/Presight-AI/stackup-engineering-academy_assessment.git
