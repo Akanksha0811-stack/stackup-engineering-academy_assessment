@@ -303,11 +303,55 @@ You should see: `README.md`, `datasets/`, `starter_files/`, `tasks/`, `docker-co
 
 ---
 
+
+
 ## 8. Python dependencies
+
+Install the pyspark independently as this package have 500MB + size by following below stepes:
+
+Step 1: Download Apache Spark
+	1. Open browser
+	2. Go to: https://spark.apache.org/downloads.html
+	3. Select: 
+Latest version
+Package: Pre-built for Hadoop 3
+	Download .tgz file
+	
+Step 2: Extract Spark
+  
+
+cd ~/Downloads
+tar -xvzf spark-*.tgz
+
+Step 3: Move Spark to a permanent location
+
+mkdir ~/spark
+mv spark-*/* ~/spark
+
+Final structure should look like:
+~/spark/ 
+      ├── bin/ 
+                        ├── conf/ 
+                                       ├── jars/
+
+
+Step 4: Set environment variables
+
+echo 'export SPARK_HOME=~/spark' >> ~/.zshrc
+echo 'export PATH=$SPARK_HOME/bin:$PATH' >> ~/.zshrc
+source ~/.zshrc
+
+
+Step 5: Validate Spark installation
+
+spark-shell
+
+If Spark starts → installation successful
+
 
 ### Create a virtual environment (recommended)
 
-A virtual environment isolates project dependencies from your system Python.
+A virtual environment isolates project dependencies from your system Python.This shoudl be created once you moved to your local project directlry created while GIT clone.
 
 ```bash
 # Create
@@ -323,9 +367,27 @@ venv\Scripts\activate               # Windows
 ### Install requirements
 
 ```bash
-pip install --upgrade pip
-pip install -r requirements.txt
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt --no-cache-dir --default-timeout=300
+
 ```
+
+### Install Pyspark inside the Virtual env 
+pip install pyspark --no-deps
+pip install py4j
+
+
+### Final validation  
+python -c "import pandas, numpy, duckdb, pyspark; print('All setup working ')"
+
+### Final checklist (YOU ARE DONE)
+
+Run below commands in your venv, if all executes without error your are good with setup.
+
+spark-shell
+python -c "import pyspark"
+python -c "import pandas"
+python -c "import duckdb"
 
 ⚠️ **PySpark requires Java** — see [Java setup](#java-setup-for-pyspark) below if PySpark fails to run.
 
