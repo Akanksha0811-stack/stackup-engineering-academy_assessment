@@ -6,7 +6,6 @@ pandas>=2.0.0
 numpy>=1.24.0
 
 # Big data
-pyspark>=3.4.0
 
 # Streaming
 kafka-python>=2.0.2
