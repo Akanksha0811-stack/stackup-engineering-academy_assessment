@@ -247,6 +247,12 @@ Once tasks are complete:
 git add .
 git commit -m "Assessment submission — your name"
 
+Note: In case during commit you experience user/email not found issue follow below two steps to set your user deatils with git:
+
+git config --global user.name "<username>"
+git config --global user.email "<user mail id>"
+
+
 # 2. Push your branch
 git push -u origin candidate/your-name
 ```
