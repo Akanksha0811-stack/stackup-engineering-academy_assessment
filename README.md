@@ -224,6 +224,40 @@ outputs/results/<trainee_name>/04_infrastructure/<output files/diagram..etc>
 | 3.2 | Real-time Kafka producer/consumer with severity-based forwarding | Topics + `outputs/kafka/summary.json` |
 | 3.3 | Airflow DAG with DQ gate, retries, XCom-driven reporting | DAG visible in Airflow UI |
 
+Note: you can refer below commands to run Airflow dag:
+
+step 1:
+
+docker exec -it <airflow-container-name> bash
+cd /opt/airflow/dags
+rm airflow_dag_starter.py
+rm -rf /opt/airflow/dags/__pycache__
+exit
+docker compose restart
+
+Open UI 
+http://localhost:8081 --- credential to logon are shared in setup guide.
+
+*** by the end of above steps you would be able to see airflow UI.
+
+step 2:
+docker exec -it airflow-webserver bash
+***now you are into airflow container
+*** copy your dag file or use below command:
+cat <<EOF > /opt/airflow/dags/presight_etl_pipeline.py
+<SOLUTION>
+EOF
+
+exit
+
+docker compose restart
+
+***Open UI 
+http://localhost:8081 --- credential to logon are shared in setup guide.
+
+
+
+
 ---
 
 ### Pillar 4 — Infrastructure & Governance (~3.5 hours)
