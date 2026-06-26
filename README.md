@@ -252,6 +252,10 @@ Note: In case during commit you experience user/email not found issue follow bel
 git config --global user.name "<username>"
 git config --global user.email "<user mail id>"
 
+Also you can veridy your user details post above two commands:
+
+git config --global --list
+
 
 # 2. Push your branch
 git push -u origin candidate/your-name
