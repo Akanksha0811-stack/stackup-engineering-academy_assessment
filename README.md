@@ -165,29 +165,31 @@ stackup-engineering-academy_assessment/
 ├── requirements.txt                # Python dependencies
 └── README.md
 ```
-
----
-
 ## 🎯 Assessment Tasks Overview
 
-1.Each pillar has detailed instructions in its respective `INSTRUCTIONS.md`. Summary:
-2. Refer starter_files to refer how to create the solutions for every section mentioned in `INSTRUCTIONS.md`. 
+1. Each pillar has detailed instructions in its respective `INSTRUCTIONS.md`.
+2. Refer to `starter_files` to see how to create the solutions for every section mentioned in `INSTRUCTIONS.md`.
 
-### NOTE: DO NOT WRITE YOUR CODE IN THESE STARTER_FILES THEY ARE MAINLY FOR READ ONLY PURPOSE. ALL YOUR SOLUTIOS SHOULD BE ADDED IN SOLUTIONS FOLDER>
+   > **Note:** Do not write your code in these `starter_files`. They are for read-only purposes. All your solutions should be added to the `solutions` folder.
 
-3. all the solutions for every section to be added in solutions folder using below folder structure:
-solutions/submissions/<trainee_name>/01_foundations/<python_file.py> or <sql_file.py>
-solutions/submissions/<trainee_name>/02_sql_and_viz/<python_file.py> or <sql_file.py>
-solutions/submissions/<trainee_name>/03_big_data/<python_file.py> or <sql_file.py>
-solutions/submissions/<trainee_name>/04_infrastructure/<python_file.py> or <sql_file.py>
+3. All the solutions for every section should be added to the `solutions` folder using the folder structure below:
 
-4. ALl the output generated as part fo your solutions should be placed by following below folder structure:
-outputs/results/<trainee_name>/01_foundations/<output files/diagram..etc>
-outputs/results/<trainee_name>/02_sql_and_viz/<output files/diagram..etc>
-outputs/results/<trainee_name>/03_big_datas/<output files/diagram..etc>
-outputs/results/<trainee_name>/04_infrastructure/<output files/diagram..etc>
+   ```
+   solutions/submissions/<trainee_name>/01_foundations/<python_file.py> or <sql_file.sql>
+   solutions/submissions/<trainee_name>/02_sql_and_viz/<python_file.py> or <sql_file.sql>
+   solutions/submissions/<trainee_name>/03_big_data/<python_file.py> or <sql_file.sql>
+   solutions/submissions/<trainee_name>/04_infrastructure/<python_file.py> or <sql_file.sql>
+   ```
 
----
+4. All output generated as part of your solutions should be placed using the folder structure below:
+
+   ```
+   outputs/results/<trainee_name>/01_foundations/<output_files/diagrams/etc>
+   outputs/results/<trainee_name>/02_sql_and_viz/<output_files/diagrams/etc>
+   outputs/results/<trainee_name>/03_big_data/<output_files/diagrams/etc>
+   outputs/results/<trainee_name>/04_infrastructure/<output_files/diagrams/etc>
+   ```
+
 
 ### Pillar 1 — Foundations (~3.5 hours)
 
@@ -276,36 +278,11 @@ http://localhost:8081 --- credential to logon are shared in setup guide.
 
 Once tasks are complete:
 
-```bash
-# 1. Stage and commit
-git add .
-git commit -m "Assessment submission — your name"
+## Submission Instructions
 
-Note: In case during commit you experience user/email not found issue follow below two steps to set your user deatils with git:
-
-git config --global user.name "<username>"
-git config --global user.email "<user mail id>"
-
-Also you can veridy your user details post above two commands:
-
-git config --global --list
-
-
-# 2. Push your branch
-git push -u origin candidate/your-name
-```
-
-**3. Open a Pull Request:**
-- Base: `main`
-- Compare: `candidate/your-name`
-- Title: `[Assessment] Your Full Name`
-- Description must include:
-  - Summary of approach per pillar
-  - Assumptions made
-  - Any tasks not completed (with reasons)
-  - Bonus tasks attempted
-  - Total time spent
-
+1. Create a public repository on GitHub containing your solution.
+2. Push all your code and any required files to that repository.
+3. Send back the link to your GitHub repository as your submission.
 
 
 ## 📊 Assessment Criteria
