@@ -1,6 +1,6 @@
 # Git & GitHub Setup
 
-Required for cloning the assessment repo, working locally, and submitting your work as a pull request.
+
 
 ---
 
