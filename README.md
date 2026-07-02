@@ -295,24 +295,6 @@ Once tasks are complete:
 | **Performance** — does it scale to the dataset size? | 10% |
 | **Documentation** — assumptions and decisions clear? | 10% |
 
----
-
-## ❓ Questions & Support
-
-If you encounter issues or have questions:
-
-1. Check existing [Issues](../../issues) — your question may be answered
-2. If not, [open a new issue](../../issues/new) with:
-   - The `question` label
-   - Clear description of what's blocking you
-   - What you've already tried
-   - Your OS and any error messages
-
-**Do not open a PR for questions** — PRs are for submitting work only.
-
-We aim to respond within 1 business day.
-
----
 
 ## 📚 Learning Resources
 
