@@ -76,26 +76,20 @@ For first-time setup, follow the master guide:
 ### Quick start (after prerequisites installed)
 
 Below steps are mentioned in detail in SETUP_GUIDE.md hence follow from their to avoid any errors.
-Once Git clone , local branch creation and python venv setup with all the requirment.txt package are done you can start the docker service as mentioned in below step 4 . After that you can start with every pillar one by one.
+Once python venv setup with all the requirment.txt package are done you can start the docker service as mentioned in below step 4 . After that you can start with every pillar one by one.
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/Presight-AI/stackup-engineering-academy_assessment.git
-cd stackup-engineering-academy_assessment
 
-# 2. Create your personal branch
-git checkout -b candidate/your-name
-
-# 3. Set up Python environment
+# 1. Set up Python environment
 python -m venv venv
 source venv/bin/activate          # Mac/Linux
 # OR: venv\Scripts\activate       # Windows
 pip install -r requirements.txt
 
-# 4. Start Docker services
+# 2. Start Docker services
 docker-compose up -d
 
-# 5. Start with Pillar 1
+# 3. Start with Pillar 1
 cat tasks/01_foundations/INSTRUCTIONS.md
 ```
 
