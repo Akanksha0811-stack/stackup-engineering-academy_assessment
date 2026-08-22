@@ -1,0 +1,16 @@
+Pipeline run timestamp: 2026-08-22T17:17:45.922187
+Pipeline execution time: 0.58 seconds
+
+--- Row counts ---
+projects_clean.csv:     500 rows
+employees_clean.csv:    1000 rows
+transactions_clean.csv: 50000 rows
+
+--- Data quality decisions ---
+- projects.budget/actual_cost nulls filled with 0
+- employees.email nulls (10) filled with placeholder 'unknown@presight.ai'
+- employees.hire_date invalid values (8: '-999'/'99999-01-01') converted to null
+- employees.years_experience invalid values (5: -1 sentinel) converted to null
+- employees.salary anomalies (3 Junior-level outliers) flagged via salary_anomaly column, not overwritten
+- transactions.amount nulls (740) filled with 0.0
+- transactions.approved_by nulls (2,444) left as null; is_approved boolean derived instead

@@ -220,8 +220,24 @@ def load_transactions(filepath: str) -> pd.DataFrame:
     """
     logger.info("Loading transactions data...")
 
-    # YOUR CODE HERE
-    df = None
+    logger.info("Loading transactions data...")
+
+    df = pd.read_json(filepath)
+    df['transaction_date'] = pd.to_datetime(df['transaction_date'])
+
+    # Null handling decisions (documented per task requirement):
+    # - amount: 740 nulls -> fill with 0.0. A transaction with no recorded
+    #   amount is treated as zero-value rather than dropped, so it still
+    #   appears in counts/audits but doesn't distort sum/average calculations.
+    # - approved_by: 2,444 nulls -> left as null (NOT fabricated). A missing
+    #   approver is a real business state ("not yet approved"), not missing
+    #   data to be guessed. enrich_transactions() will derive an is_approved
+    #   boolean flag from this for easy filtering downstream.
+    df['amount'] = df['amount'].fillna(0.0)
+
+    logger.info(f"Loaded {len(df)} transaction records")
+    logger.info(f"Null amounts filled with 0.0: {(df['amount'] == 0.0).sum()}")
+    logger.info(f"Transactions with no approver: {df['approved_by'].isna().sum()}")
 
     return df
 
@@ -243,28 +259,69 @@ def enrich_transactions(
     """
     logger.info("Enriching transactions...")
 
-    # YOUR CODE HERE
+        # Join project context (project_name, department) via project_id.
+    # Using how='left' + explicit `on=` so every transaction is preserved
+    # even if a project_id somehow doesn't match (shouldn't happen, but
+    # left join is the safe default for enrichment rather than dropping data).
+    transactions = transactions.merge(
+        projects[['project_id', 'project_name', 'department']],
+        on='project_id',
+        how='left'
+    )
+
+    # Join approver's name via approved_by -> employee_id. Only current
+    # employee records are relevant here (an approver's identity doesn't
+    # change even if their salary/role has SCD2 history), so this uses the
+    # employees_clean.csv current-state table, not the SCD2 dim_employee.
+    transactions = transactions.merge(
+        employees[['employee_id', 'full_name']].rename(
+            columns={'employee_id': 'approved_by', 'full_name': 'approver_name'}
+        ),
+        on='approved_by',
+        how='left'
+    )
+
+    transactions['is_approved'] = transactions['approved_by'].notna()
+    transactions['amount_aed'] = transactions['amount'].astype(float).fillna(0.0)
+    transactions['transaction_year_month'] = transactions['transaction_date'].dt.to_period('M').astype(str)
+
+    logger.info(f"Enriched {len(transactions)} transactions")
+    logger.info(f"Approved transactions: {transactions['is_approved'].sum()}")
+    logger.info(f"Unapproved transactions: {(~transactions['is_approved']).sum()}")
 
     return transactions
 
 
-def write_outputs(projects: pd.DataFrame, employees: pd.DataFrame, transactions: pd.DataFrame):
+def write_outputs(projects: pd.DataFrame, employees: pd.DataFrame, transactions: pd.DataFrame, elapsed_seconds: float = None):
     """
-    Write cleaned and enriched DataFrames to the outputs/ directory.
-
-    TODO:
-      - Write each DataFrame to a CSV in outputs/
-      - Write a pipeline_summary.txt with:
-          - Run timestamp
-          - Row counts before and after cleaning per dataset
-          - List of data quality issues found and fixed
+    ...
     """
     logger.info("Writing outputs...")
 
     projects.to_csv(os.path.join(OUTPUT_DIR, "projects_clean.csv"), index=False)
     employees.to_csv(os.path.join(OUTPUT_DIR, "employees_clean.csv"), index=False)
+    transactions.to_csv(os.path.join(OUTPUT_DIR, "transactions_clean.csv"), index=False)
     logger.info(f"Wrote projects_clean.csv ({len(projects)} rows)")
     logger.info(f"Wrote employees_clean.csv ({len(employees)} rows)")
+    logger.info(f"Wrote transactions_clean.csv ({len(transactions)} rows)")
+
+    summary_path = os.path.join(OUTPUT_DIR, "pipeline_summary.txt")
+    with open(summary_path, "w") as f:
+        f.write(f"Pipeline run timestamp: {datetime.now().isoformat()}\n")
+        f.write(f"Pipeline execution time: {elapsed_seconds:.2f} seconds\n" if elapsed_seconds else "")
+        f.write("\n--- Row counts ---\n")
+        f.write(f"projects_clean.csv:     {len(projects)} rows\n")
+        f.write(f"employees_clean.csv:    {len(employees)} rows\n")
+        f.write(f"transactions_clean.csv: {len(transactions)} rows\n")
+        f.write("\n--- Data quality decisions ---\n")
+        f.write("- projects.budget/actual_cost nulls filled with 0\n")
+        f.write("- employees.email nulls (10) filled with placeholder 'unknown@presight.ai'\n")
+        f.write("- employees.hire_date invalid values (8: '-999'/'99999-01-01') converted to null\n")
+        f.write("- employees.years_experience invalid values (5: -1 sentinel) converted to null\n")
+        f.write("- employees.salary anomalies (3 Junior-level outliers) flagged via salary_anomaly column, not overwritten\n")
+        f.write("- transactions.amount nulls (740) filled with 0.0\n")
+        f.write("- transactions.approved_by nulls (2,444) left as null; is_approved boolean derived instead\n")
+    logger.info(f"Wrote pipeline_summary.txt")
 
 
 # ==============================================================================
@@ -316,6 +373,9 @@ def run_pipeline():
     Orchestrates the full ETL pipeline end to end.
     Call each function in the correct order.
     """
+    import time
+    start_time = time.time()
+
     logger.info("=" * 60)
     logger.info("Starting ETL pipeline")
     logger.info("=" * 60)
@@ -342,7 +402,10 @@ def run_pipeline():
     logger.info("DQ Results — Transactions: %s", dq_transactions)
 
     # Step 5: Write outputs
-    write_outputs(clean_projects, clean_emp, enriched_txn)
+    elapsed = time.time() - start_time
+    write_outputs(clean_projects, clean_emp, enriched_txn, elapsed_seconds=elapsed)
+
+    logger.info("Pipeline complete in %.2f seconds. Outputs written to: %s", elapsed, OUTPUT_DIR)
 
     logger.info("Pipeline complete. Outputs written to: %s", OUTPUT_DIR)
 
