@@ -178,7 +178,55 @@ CREATE TABLE fact_transactions (
 
 -- Example (DuckDB):
 -- INSERT INTO dim_project SELECT * FROM read_csv_auto('outputs/projects_clean.csv');
+-- Load dim_project directly from the cleaned CSV — column order must match
+-- the CREATE TABLE definition exactly since we're using SELECT * rather
+-- than naming columns (acceptable here since projects_clean.csv columns
+-- were designed to align with dim_project 1:1).
+INSERT INTO dim_project
+SELECT
+    ROW_NUMBER() OVER (ORDER BY project_id) AS project_key,
+    project_id, project_name, department, status, status_category,
+    start_date, end_date, budget, actual_cost, budget_variance,
+    is_over_budget, duration_days, budget_utilisation_pct, risk_level,
+    priority, region, project_manager_id
+FROM read_csv_auto('outputs/projects_clean.csv');
 
+-- Load dim_vendor: distinct vendors extracted directly from the
+-- transactions data (no separate vendor master file exists in the source
+-- system), using vendor_id as the natural key and vendor_name from the
+-- same source. vendor_category is left null since the source data doesn't
+-- classify vendors by category (category exists on the transaction/category
+-- field instead, not per-vendor).
+INSERT INTO dim_vendor (vendor_key, vendor_id, vendor_name, vendor_category)
+SELECT
+    ROW_NUMBER() OVER (ORDER BY vendor_id) AS vendor_key,
+    vendor_id, vendor_name, NULL AS vendor_category
+FROM (
+    SELECT DISTINCT vendor_id, vendor_name
+    FROM read_csv_auto('outputs/transactions_clean.csv')
+);
+-- Populate dim_date: generate one row per calendar date spanning the full
+-- range of transaction dates, using DuckDB's generate_series to build the
+-- spine. Calendar attributes (quarter, weekday, etc.) are computed from
+-- each date rather than hardcoded, so the dimension stays correct for
+-- any date range.
+INSERT INTO dim_date
+SELECT
+    CAST(strftime(d, '%Y%m%d') AS INTEGER) AS date_key,
+    d AS full_date,
+    EXTRACT(YEAR FROM d) AS year,
+    EXTRACT(QUARTER FROM d) AS quarter,
+    EXTRACT(MONTH FROM d) AS month,
+    strftime(d, '%B') AS month_name,
+    EXTRACT(WEEK FROM d) AS week,
+    EXTRACT(DAY FROM d) AS day,
+    EXTRACT(ISODOW FROM d) AS day_of_week,
+    (EXTRACT(ISODOW FROM d) IN (6, 7)) AS is_weekend
+FROM generate_series(
+    (SELECT MIN(CAST(transaction_date AS DATE)) FROM read_csv_auto('outputs/transactions_clean.csv')),
+    (SELECT MAX(CAST(transaction_date AS DATE)) FROM read_csv_auto('outputs/transactions_clean.csv')),
+    INTERVAL 1 DAY
+) AS t(d);
 -- Populate dim_employee using SCD Type 2 logic.
 -- employees_salary_history.csv is a change-event log (one row per change,
 -- with previous_*/new_* pairs and an effective_date). We convert this into
@@ -268,6 +316,37 @@ SELECT
     employee_id, full_name, email, department, role, level, salary, region,
     status, valid_from, valid_to, is_current, change_reason
 FROM combined;
+
+-- Populate fact_transactions: resolves each transaction's natural keys
+-- (project_id, vendor_id, approved_by, transaction_date) into surrogate
+-- keys from the dimension tables. employee_key is resolved via a
+-- point-in-time join against dim_employee's SCD2 version that was current
+-- AT THE transaction_date — not necessarily the employee's current salary
+-- version — so historical reporting reflects who approved it and in what
+-- role, as of that moment. Transactions with no approver (approved_by is
+-- null) correctly get a null employee_key via the LEFT JOIN.
+INSERT INTO fact_transactions (
+    transaction_key, transaction_id, project_key, employee_key, vendor_key,
+    date_key, amount, category, payment_status
+)
+SELECT
+    ROW_NUMBER() OVER (ORDER BY t.transaction_id) AS transaction_key,
+    t.transaction_id,
+    p.project_key,
+    e.employee_key,
+    v.vendor_key,
+    CAST(strftime(CAST(t.transaction_date AS DATE), '%Y%m%d') AS INTEGER) AS date_key,
+    t.amount_aed AS amount,
+    t.category,
+    t.payment_status
+FROM read_csv_auto('outputs/transactions_clean.csv') t
+JOIN dim_project p ON p.project_id = t.project_id
+LEFT JOIN dim_vendor v ON v.vendor_id = t.vendor_id
+LEFT JOIN dim_employee e
+    ON e.employee_id = t.approved_by
+    AND CAST(t.transaction_date AS DATE) BETWEEN e.valid_from AND e.valid_to;
+
+
 
 -- ---------------------------------------------------------------------------
 -- SCD2 Validation Queries (required by Task 1.2)
