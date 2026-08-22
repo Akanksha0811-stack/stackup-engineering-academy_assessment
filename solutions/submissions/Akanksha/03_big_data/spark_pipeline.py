@@ -261,51 +261,118 @@ def daily_event_volume(df):
     result = daily.orderBy(F.asc("event_date"), F.desc("event_count"))
     return result
 
+def peak_usage_analysis(df):
+    """
+    For each event_date x event_hour combination, compute total events,
+    unique users active, and distinct event types touched — identifies
+    peak usage windows for capacity planning.
+    """
+    result = df.groupBy("event_date", "event_hour").agg(
+        F.count("*").alias("total_events"),
+        F.countDistinct("user_id").alias("unique_users"),
+        F.countDistinct("event_type").alias("event_types_per_hour"),
+    ).orderBy(F.desc("total_events")).limit(20)
+
+    return result
+
 
 # ==============================================================================
 # STEP 5 — Write outputs
 # ==============================================================================
 
-def write_parquet(df, name: str, output_dir: str):
+def write_parquet(df, name: str, output_dir: str, partition_by: str = None, coalesce_to_one: bool = False):
     """
     Write a DataFrame to Parquet.
 
-    TODO:
-      - Write to output_dir/name/
-      - Use overwrite mode
-      - Partition project_activity_summary and daily_event_volume by event_date
-        (for the tables that have that column)
-      - Print row count after writing
+    NOTE: Uses pandas.to_parquet() rather than Spark's native writer. On
+    Windows without winutils.exe (Hadoop's native filesystem binding),
+    Spark's own Parquet writer fails when it tries to set file permissions
+    via Hadoop's local filesystem layer. Converting to pandas first avoids
+    that code path entirely (pandas writes files directly via pyarrow, no
+    Hadoop dependency) while still producing standard, readable Parquet
+    output. For partitioned tables, we partition manually by writing one
+    file per partition value into partition_by=value/ subfolders, mimicking
+    Spark/Hive's partitioned-directory convention.
     """
+    import shutil
     path = os.path.join(output_dir, name)
-    # YOUR CODE HERE
-    pass
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
 
+    pdf = df.toPandas()
+    row_count = len(pdf)
+
+    if partition_by:
+        for value, group in pdf.groupby(partition_by):
+            part_dir = os.path.join(path, f"{partition_by}={value}")
+            os.makedirs(part_dir, exist_ok=True)
+            group.to_parquet(os.path.join(part_dir, "part-0000.parquet"), index=False)
+        print(f"Wrote {row_count} rows to {path} (partitioned by {partition_by})")
+    else:
+        pdf.to_parquet(os.path.join(path, "part-0000.parquet"), index=False)
+        print(f"Wrote {row_count} rows to {path}")
 
 # ==============================================================================
 # PIPELINE ENTRY POINT
 # ==============================================================================
 
 def run_pipeline():
+    import time
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    pipeline_start = time.time()
+    timings = {}
 
     spark = get_spark_session()
 
-    raw         = load_events(spark, EVENTS_DIR)
-    clean       = validate_events(raw)
+    t0 = time.time()
+    raw = load_events(spark, EVENTS_DIR)
+    clean = validate_events(raw)
+    timings["load_and_validate"] = time.time() - t0
 
-    proj_summary  = project_activity_summary(clean)
-    user_summary  = user_activity_summary(clean)
-    esc_log       = escalation_log(clean)
-    daily_vol     = daily_event_volume(clean)
+    total_rows = clean.count()
 
+    t0 = time.time()
+    proj_summary = project_activity_summary(clean)
     write_parquet(proj_summary, "project_activity_summary", OUTPUT_DIR)
-    write_parquet(user_summary, "user_activity_summary",    OUTPUT_DIR)
-    write_parquet(esc_log,      "escalation_log",           OUTPUT_DIR)
-    write_parquet(daily_vol,    "daily_event_volume",       OUTPUT_DIR)
+    timings["project_activity_summary"] = time.time() - t0
+
+    t0 = time.time()
+    user_summary = user_activity_summary(clean)
+    write_parquet(user_summary, "user_activity_summary", OUTPUT_DIR)
+    timings["user_activity_summary"] = time.time() - t0
+
+    t0 = time.time()
+    esc_log = escalation_log(clean)
+    write_parquet(esc_log, "escalation_log", OUTPUT_DIR, partition_by="severity")
+    timings["escalation_log"] = time.time() - t0
+
+    t0 = time.time()
+    daily_vol = daily_event_volume(clean)
+    write_parquet(daily_vol, "daily_event_volume", OUTPUT_DIR, partition_by="event_date")
+    timings["daily_event_volume"] = time.time() - t0
+
+    t0 = time.time()
+    peak_usage = peak_usage_analysis(clean)
+    write_parquet(peak_usage, "peak_usage_analysis", OUTPUT_DIR)
+    timings["peak_usage_analysis"] = time.time() - t0
+
+    total_elapsed = time.time() - pipeline_start
+
+    print("\n" + "=" * 60)
+    print("PERFORMANCE BASELINE")
+    print("=" * 60)
+    print(f"Total rows processed: {total_rows}")
+    print(f"Total execution time: {total_elapsed:.2f} seconds")
+    print(f"Events processed per second: {total_rows / total_elapsed:.1f}")
+    print("\nPer-aggregation timing:")
+    for name, elapsed in timings.items():
+        print(f"  {name}: {elapsed:.2f}s")
+    print("=" * 60)
 
     spark.stop()
-    print("Spark pipeline complete.")
+    print("\nSpark pipeline complete.")
 
 
 if __name__ == "__main__":
