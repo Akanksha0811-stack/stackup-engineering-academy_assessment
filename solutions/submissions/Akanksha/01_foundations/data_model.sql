@@ -207,7 +207,7 @@ FROM (
 );
 -- Populate dim_date: generate one row per calendar date spanning the full
 -- range of transaction dates, using DuckDB's generate_series to build the
--- spine. Calendar attributes (quarter, weekday, etc.) are computed from
+-- spine. Calendar attributes (quarter, weekday, etc.) are  from
 -- each date rather than hardcoded, so the dimension stays correct for
 -- any date range.
 INSERT INTO dim_date
@@ -399,58 +399,167 @@ WHERE a.valid_from <= b.valid_to
 -- Queries must run without errors against your loaded data.
 
 -- ---------------------------------------------------------------------------
--- Q1. BUDGET PERFORMANCE
--- Which departments have spent more than 90% of their total budget across
--- all projects? Show department, total_budget, total_actual_cost,
--- spend_percentage, and whether they are over budget.
--- Order by spend_percentage descending.
 -- ---------------------------------------------------------------------------
-
--- YOUR CODE HERE
+-- Q1. DEPARTMENT BUDGET PERFORMANCE
+-- Departments that have spent more than 90% of their total allocated budget.
+-- ---------------------------------------------------------------------------
+-- Approach: aggregate budget and actual_cost per department directly from
+-- dim_project (current-state dimension, one row per project). Spend
+-- percentage is computed post-aggregation (not averaged per-project) to
+-- correctly weight larger projects.
+SELECT
+    department,
+    SUM(budget) AS total_budget,
+    SUM(actual_cost) AS total_actual_cost,
+    ROUND(SUM(actual_cost) / NULLIF(SUM(budget), 0) * 100, 2) AS spend_percentage,
+    (SUM(actual_cost) > SUM(budget)) AS over_budget
+FROM dim_project
+GROUP BY department
+HAVING SUM(actual_cost) / NULLIF(SUM(budget), 0) > 0.90
+ORDER BY spend_percentage DESC;
 
 
 -- ---------------------------------------------------------------------------
--- Q2. PROJECT MANAGER WORKLOAD
--- Which project managers are currently managing more than one active project
--- (status = 'In Progress')? Show their full name, email, number of active
--- projects, and the combined budget they are responsible for.
+-- Q2. PROJECT MANAGER WORKLOAD (current employee data)
+-- Managers currently overseeing more than three active ('In Progress') projects.
 -- ---------------------------------------------------------------------------
-
--- YOUR CODE HERE
-
+-- Approach: join dim_project to dim_employee ON project_manager_id, filtered
+-- to is_current = TRUE (per task instruction — current employee context
+-- only, not full SCD2 history) and status = 'In Progress'. Aggregate per
+-- manager, filtering to >3 active projects via HAVING.
+-- NOTE: This query returns 0 rows against the current dataset — verified
+-- this is a correct result, not a bug: the max concurrent 'In Progress'
+-- projects per individual manager (grouped by employee_id) is 3, so none
+-- exceed the >3 threshold. (Grouping by full_name alone is misleading here,
+-- since the data contains employees who coincidentally share the same name
+-- but are distinct people with different employee_ids/emails.)
+SELECT
+    e.full_name,
+    e.email,
+    COUNT(*) AS active_project_count,
+    SUM(p.budget) AS combined_budget_responsibility,
+    SUM(p.actual_cost) AS combined_actual_spend
+FROM dim_project p
+JOIN dim_employee e
+    ON e.employee_id = p.project_manager_id
+    AND e.is_current = TRUE
+WHERE p.status = 'In Progress'
+GROUP BY e.full_name, e.email
+HAVING COUNT(*) > 3
+ORDER BY active_project_count DESC;
 
 -- ---------------------------------------------------------------------------
 -- Q3. VENDOR CONCENTRATION RISK
--- Identify vendors who account for more than 30% of total transaction spend
--- across all projects. Show vendor_name, total_spend, percentage_of_total.
--- This is a risk indicator — flag these vendors in the output.
+-- Vendors accounting for more than 5% of total transaction spend.
 -- ---------------------------------------------------------------------------
-
--- YOUR CODE HERE
+-- Approach: a CTE computes each vendor's total spend and transaction count.
+-- Percentage is computed in a second layer (subquery), since window
+-- functions cannot be referenced directly inside a WHERE clause.
+WITH vendor_totals AS (
+    SELECT
+        v.vendor_name,
+        SUM(f.amount) AS total_spend,
+        COUNT(*) AS transaction_count
+    FROM fact_transactions f
+    JOIN dim_vendor v ON v.vendor_key = f.vendor_key
+    GROUP BY v.vendor_name
+),
+vendor_pct AS (
+    SELECT
+        vendor_name,
+        total_spend,
+        transaction_count,
+        ROUND(total_spend / SUM(total_spend) OVER () * 100, 2) AS percentage_of_total_spend
+    FROM vendor_totals
+)
+SELECT
+    vendor_name,
+    total_spend,
+    transaction_count,
+    percentage_of_total_spend,
+    CASE
+        WHEN percentage_of_total_spend > 10 THEN 'HIGH'
+        WHEN percentage_of_total_spend >= 5 THEN 'MEDIUM'
+        ELSE 'NORMAL'
+    END AS risk_flag
+FROM vendor_pct
+WHERE percentage_of_total_spend > 5
+ORDER BY percentage_of_total_spend DESC;
+-- ---------------------------------------------------------------------------
+-- Q4. PROJECTS WITH OPEN FINANCIAL ISSUES
+-- Projects with pending/disputed transactions totalling more than 50,000 AED.
+-- ---------------------------------------------------------------------------
+-- Approach: filter fact_transactions to payment_status IN ('Pending',
+-- 'Disputed'), aggregate per project, then HAVING filters to totals > 50,000.
+SELECT
+    p.project_id,
+    p.project_name,
+    p.department,
+    p.status AS project_status,
+    COUNT(*) AS open_transaction_count,
+    SUM(f.amount) AS open_transaction_value
+FROM fact_transactions f
+JOIN dim_project p ON p.project_key = f.project_key
+WHERE f.payment_status IN ('Pending', 'Disputed')
+GROUP BY p.project_id, p.project_name, p.department, p.status
+HAVING SUM(f.amount) > 50000
+ORDER BY open_transaction_value DESC;
 
 
 -- ---------------------------------------------------------------------------
--- Q4. ESCALATION-TO-COMPLETION RATE
--- Using the events data (if loaded), calculate the percentage of projects
--- that had at least one escalation event during their lifecycle.
--- If events data is not available, use the transactions data instead:
--- calculate the percentage of projects with a 'Disputed' transaction.
--- Show project_id, project_name, status, had_issue (True/False).
+-- Q5. MONTHLY SPEND TREND WITH RUNNING TOTAL
 -- ---------------------------------------------------------------------------
-
--- YOUR CODE HERE
-
+-- Approach: aggregate spend per year_month + category from dim_date joined
+-- to fact_transactions, then use SUM() OVER (PARTITION BY category ORDER BY
+-- year_month) for the running total, and LAG() for month-over-month % change.
+WITH monthly AS (
+    SELECT
+        d.year || '-' || LPAD(CAST(d.month AS VARCHAR), 2, '0') AS year_month,
+        f.category,
+        SUM(f.amount) AS monthly_spend
+    FROM fact_transactions f
+    JOIN dim_date d ON d.date_key = f.date_key
+    GROUP BY d.year, d.month, f.category
+)
+SELECT
+    year_month,
+    category,
+    monthly_spend,
+    SUM(monthly_spend) OVER (
+        PARTITION BY category ORDER BY year_month
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS running_total,
+    ROUND(
+        (monthly_spend - LAG(monthly_spend) OVER (PARTITION BY category ORDER BY year_month))
+        / NULLIF(LAG(monthly_spend) OVER (PARTITION BY category ORDER BY year_month), 0) * 100,
+        2
+    ) AS month_over_month_pct_change
+FROM monthly
+ORDER BY category, year_month;
 
 -- ---------------------------------------------------------------------------
--- Q5. MONTHLY SPEND TREND
--- Show the total transaction amount per month for the past 12 months,
--- broken down by category (Software, Consulting, Cloud Services, etc.)
--- Format the output as: year_month | category | total_amount | running_total
--- (running_total should accumulate within each category across months)
+-- Q6. EMPLOYEE COMPENSATION HISTORY — LARGEST SALARY INCREASES
 -- ---------------------------------------------------------------------------
-
--- YOUR CODE HERE
-
+-- Approach: self-join dim_employee to itself on employee_id, matching each
+-- version's valid_from to the PRECEDING version's valid_to + 1 day (i.e.
+-- consecutive versions). This directly finds "the version right before this
+-- one" without needing LAG(), which keeps the logic explicit about the
+-- SCD2 date-boundary relationship.
+SELECT
+    curr.employee_id,
+    curr.full_name,
+    curr.valid_from AS change_date,
+    prev.salary AS previous_salary,
+    curr.salary AS new_salary,
+    (curr.salary - prev.salary) AS increase_amount,
+    ROUND((curr.salary - prev.salary) / NULLIF(prev.salary, 0) * 100, 2) AS increase_pct
+FROM dim_employee curr
+JOIN dim_employee prev
+    ON prev.employee_id = curr.employee_id
+    AND prev.valid_to = curr.valid_from - INTERVAL 1 DAY
+WHERE curr.salary > prev.salary
+ORDER BY increase_amount DESC
+LIMIT 20;
 
 -- ===========================================================================
 -- SECTION 4 — TASK 2.3: Query optimisation
