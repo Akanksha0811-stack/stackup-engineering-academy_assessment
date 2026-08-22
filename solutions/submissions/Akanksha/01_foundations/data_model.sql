@@ -612,16 +612,142 @@ ORDER BY e.department, t.amount DESC;
 -- ---------------------------------------------------------------------------
 -- 4a) EXPLAIN output and bottleneck analysis (paste as comment):
 -- ---------------------------------------------------------------------------
--- YOUR ANALYSIS HERE
+-- Benchmarked on DuckDB against the full 50K-row transactions table (500
+-- projects, 1,000 employees), 5 runs each, timed in Python.
+--
+-- ORIGINAL QUERY: EXPLAIN ANALYZE total time 0.0139-0.0214s; average
+-- wall-clock across 5 runs = 12.94ms.
+--
+-- KEY OBSERVATION: DuckDB's optimizer already rewrites the correlated
+-- scalar subquery into a "Dynamic Filter" (visible in the plan as
+-- `amount>64552.299...`) that is computed ONCE and pushed directly into
+-- the transactions table scan, rather than re-executing the subquery
+-- per outer row. This means the classic "N+1 subquery" problem the
+-- original query's structure invites does NOT actually manifest at
+-- runtime on DuckDB, at this data volume.
+--
+-- What IS structurally wrong with the original, independent of whether
+-- DuckDB happens to optimize around it:
+--   1. Implicit comma-joins (FROM a, b, c WHERE ...) rely entirely on the
+--      optimizer to infer join order and type; explicit JOIN syntax is
+--      required by ANSI SQL best practice and is mandatory on many engines
+--      (and safer against accidental cross joins if a WHERE condition is
+--      ever dropped).
+--   2. The scalar subquery recomputing AVG(amount) is written inline
+--      rather than as a named, reusable CTE — harder to read, and NOT
+--      guaranteed to be optimized this way on every SQL engine (older
+--      MySQL/Postgres versions, or engines without dynamic filter pushdown,
+--      WILL re-execute a correlated subquery per row, causing genuine
+--      O(n*m) behavior at scale).
+--   3. Filters on projects.status and transactions.payment_status are not
+--      isolated/named, making it hard to verify what's been filtered before
+--      the joins happen.
+-- These make the original fragile: correct and fast today, on this engine,
+-- at this data volume, but not guaranteed to stay that way.
 
 
 -- ---------------------------------------------------------------------------
 -- 4b) REWRITTEN QUERY
 -- ---------------------------------------------------------------------------
--- YOUR CODE HERE
+WITH pending_avg AS (
+    SELECT AVG(amount) AS avg_pending_amount
+    FROM transactions
+    WHERE payment_status = 'Pending'
+),
+filtered_transactions AS (
+    SELECT project_id, amount, category, payment_status, transaction_date
+    FROM transactions, pending_avg
+    WHERE payment_status = 'Pending'
+      AND amount > avg_pending_amount
+),
+filtered_projects AS (
+    SELECT project_id, project_manager_id, project_name, status, budget, actual_cost
+    FROM projects
+    WHERE status NOT IN ('Completed', 'On Hold')
+)
+SELECT
+    e.full_name,
+    e.department,
+    e.role,
+    p.project_name,
+    p.status,
+    p.budget,
+    p.actual_cost,
+    t.amount,
+    t.category,
+    t.payment_status,
+    t.transaction_date
+FROM filtered_transactions t
+JOIN filtered_projects p ON p.project_id = t.project_id
+JOIN employees e ON e.employee_id = p.project_manager_id
+ORDER BY e.department, t.amount DESC;
 
 
 -- ---------------------------------------------------------------------------
 -- 4c) Explanation of changes and indexing strategy
 -- ---------------------------------------------------------------------------
--- YOUR EXPLANATION HERE
+--
+-- WHAT CHANGED AND WHY:
+--   1. Explicit JOIN ... ON syntax replaces the implicit comma-join, making
+--      join conditions unambiguous and matching ANSI SQL standard practice.
+--   2. The correlated scalar subquery is replaced with a named CTE
+--      (pending_avg) computed once, then referenced by the filtering CTE.
+--      On engines without DuckDB's dynamic-filter optimization, this is
+--      the difference between one aggregate scan and thousands of repeated
+--      subquery evaluations.
+--   3. Filters are isolated into their own CTEs (filtered_transactions,
+--      filtered_projects) BEFORE the joins happen, so each join operates
+--      on the smallest possible row set (predicate pushdown made explicit
+--      in the query structure, not left to the optimizer to infer).
+--   4. Only needed columns are selected in each CTE rather than using
+--      SELECT * anywhere.
+--
+-- BENCHMARK RESULT (measured, not assumed):
+--   Original:  avg 12.94ms over 5 runs (EXPLAIN ANALYZE: 13.9-21.4ms)
+--   Rewritten: avg 13.81ms over 5 runs (EXPLAIN ANALYZE: 12.9ms)
+--   Row counts match exactly (923 rows both queries) — the rewrite is
+--   correctness-preserving.
+--   No meaningful speedup was observed at this data volume on DuckDB,
+--   because DuckDB's optimizer already applies dynamic filter pushdown to
+--   the original query's correlated subquery, achieving the same effect
+--   our explicit CTEs achieve by hand. The value of this rewrite is
+--   ENGINE-INDEPENDENCE and MAINTAINABILITY: on Postgres, MySQL <8.0, or
+--   any engine without DuckDB's specific optimization, the original query's
+--   correlated subquery would re-execute once per candidate row, and at
+--   production scale (millions of transactions) this would produce a
+--   measurable, possibly severe, slowdown that the rewrite avoids by
+--   construction rather than by hoping the optimizer catches it.
+--
+-- INDEXES FOR PRODUCTION (row-store engine, e.g. Postgres):
+CREATE INDEX idx_transactions_payment_status_amount
+    ON transactions (payment_status, amount);
+-- Accelerates the pending_avg aggregate AND the filtered_transactions scan:
+-- both filter on payment_status = 'Pending' then range-filter on amount.
+-- Composite index with payment_status first (the equality filter) means
+-- the index narrows to Pending rows before the amount range scan, so this
+-- single index serves both CTEs in the rewritten query.
+
+CREATE INDEX idx_transactions_project_id
+    ON transactions (project_id);
+-- Accelerates the join from filtered_transactions to filtered_projects.
+-- Foreign-key-style column, high join selectivity.
+
+CREATE INDEX idx_projects_status
+    ON projects (status);
+-- Accelerates the filtered_projects CTE's WHERE status NOT IN (...) scan.
+-- NOTE: NOT IN doesn't always use an index as efficiently as an equality
+-- or IN filter would; in production this might be worth restructuring as
+-- status IN ('In Progress', 'Not Started') if the full set of "active"
+-- statuses is small and stable, which allows a more direct index seek.
+
+CREATE INDEX idx_projects_manager_id
+    ON projects (project_manager_id);
+-- Accelerates the join from filtered_projects to employees.
+
+-- TRADE-OFF: each index speeds up this read-heavy dashboard query but adds
+-- write overhead (every INSERT/UPDATE on transactions or projects must
+-- also update these indexes) and disk space. Given the stated use case —
+-- a finance dashboard queried "hundreds of times per day" — the read
+-- volume almost certainly justifies the write cost, since transactions and
+-- projects are unlikely to be written hundreds of times per day by
+-- comparison.
