@@ -1,0 +1,13 @@
+﻿outputs/
+.git/
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.vscode/
+.idea/
+*.log
+.DS_Store
