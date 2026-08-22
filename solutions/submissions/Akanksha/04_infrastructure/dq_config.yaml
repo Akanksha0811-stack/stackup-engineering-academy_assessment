@@ -1,0 +1,64 @@
+﻿# Presight Data Quality Framework — Configuration
+# Author: Akanksha Shreya
+#
+# Each entry defines one check: which table, which column(s), what type
+# of check, and any parameters the check needs. Adding a new check to an
+# existing or new table requires only a new YAML entry — no code changes.
+
+checks:
+  - table: projects
+    column: project_id
+    check_type: not_null
+    description: "project_id must never be null (primary business key)"
+
+  - table: projects
+    column: project_id
+    check_type: unique
+    description: "project_id must be unique (no duplicate projects)"
+
+  - table: projects
+    column: budget
+    check_type: range
+    min: 0
+    max: 5000000
+    description: "budget must be a plausible positive value under 5M AED"
+
+  - table: projects
+    column: status
+    check_type: allowed_values
+    values: ["Completed", "In Progress", "Not Started", "On Hold"]
+    description: "status must be one of the four known project states"
+
+  - table: employees
+    column: employee_id
+    check_type: not_null
+    description: "employee_id must never be null"
+
+  - table: employees
+    column: employee_id
+    check_type: unique
+    description: "employee_id must be unique"
+
+  - table: employees
+    column: years_experience
+    check_type: range
+    min: 0
+    max: 50
+    description: "years_experience must be non-negative and realistic"
+
+  - table: transactions
+    column: transaction_id
+    check_type: unique
+    description: "transaction_id must be unique across all transactions"
+
+  - table: transactions
+    column: amount
+    check_type: not_null
+    description: "amount should not be null after cleaning"
+
+  - table: transactions
+    column: project_id
+    check_type: referential_integrity
+    reference_table: projects
+    reference_column: project_id
+    description: "every transaction's project_id must exist in the projects table"

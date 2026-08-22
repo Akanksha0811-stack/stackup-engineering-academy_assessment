@@ -1,0 +1,88 @@
+{
+  "run_timestamp": "2026-08-22T23:28:45.602747",
+  "total_checks": 10,
+  "passed": 10,
+  "failed": 0,
+  "results": [
+    {
+      "table": "projects",
+      "column": "project_id",
+      "check_type": "not_null",
+      "description": "project_id must never be null (primary business key)",
+      "passed": true,
+      "detail": "0 null values found"
+    },
+    {
+      "table": "projects",
+      "column": "project_id",
+      "check_type": "unique",
+      "description": "project_id must be unique (no duplicate projects)",
+      "passed": true,
+      "detail": "0 duplicate values found"
+    },
+    {
+      "table": "projects",
+      "column": "budget",
+      "check_type": "range",
+      "description": "budget must be a plausible positive value under 5M AED",
+      "passed": true,
+      "detail": "0 values out of range [0, 5000000] (0 below, 0 above)"
+    },
+    {
+      "table": "projects",
+      "column": "status",
+      "check_type": "allowed_values",
+      "description": "status must be one of the four known project states",
+      "passed": true,
+      "detail": "0 rows with value outside ['Completed', 'In Progress', 'Not Started', 'On Hold']"
+    },
+    {
+      "table": "employees",
+      "column": "employee_id",
+      "check_type": "not_null",
+      "description": "employee_id must never be null",
+      "passed": true,
+      "detail": "0 null values found"
+    },
+    {
+      "table": "employees",
+      "column": "employee_id",
+      "check_type": "unique",
+      "description": "employee_id must be unique",
+      "passed": true,
+      "detail": "0 duplicate values found"
+    },
+    {
+      "table": "employees",
+      "column": "years_experience",
+      "check_type": "range",
+      "description": "years_experience must be non-negative and realistic",
+      "passed": true,
+      "detail": "0 values out of range [0, 50] (0 below, 0 above)"
+    },
+    {
+      "table": "transactions",
+      "column": "transaction_id",
+      "check_type": "unique",
+      "description": "transaction_id must be unique across all transactions",
+      "passed": true,
+      "detail": "0 duplicate values found"
+    },
+    {
+      "table": "transactions",
+      "column": "amount",
+      "check_type": "not_null",
+      "description": "amount should not be null after cleaning",
+      "passed": true,
+      "detail": "0 null values found"
+    },
+    {
+      "table": "transactions",
+      "column": "project_id",
+      "check_type": "referential_integrity",
+      "description": "every transaction's project_id must exist in the projects table",
+      "passed": true,
+      "detail": "0 rows reference a missing projects.project_id"
+    }
+  ]
+}
