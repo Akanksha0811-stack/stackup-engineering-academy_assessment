@@ -149,6 +149,8 @@ services:
       AIRFLOW__WEBSERVER__SECRET_KEY: "presight-assessment-secret"
     volumes:
       - ./starter_files:/opt/airflow/dags
+      - ./datasets:/opt/airflow/datasets
+      - ./outputs:/opt/airflow/outputs
       - airflow_logs:/opt/airflow/logs
       - ./datasets:/opt/airflow/datasets
       - ./outputs:/opt/airflow/outputs
@@ -175,6 +177,8 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     volumes:
       - ./starter_files:/opt/airflow/dags
+      - ./datasets:/opt/airflow/datasets
+      - ./outputs:/opt/airflow/outputs
       - airflow_logs:/opt/airflow/logs
       - ./datasets:/opt/airflow/datasets
       - ./outputs:/opt/airflow/outputs

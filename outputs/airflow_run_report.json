@@ -1,0 +1,20 @@
+{
+  "run_timestamp": "2026-08-22T19:11:44.027661",
+  "dq_results": {
+    "total_rows": 99996,
+    "null_event_id": 0,
+    "null_user_id": 0,
+    "duplicate_event_ids": 0,
+    "null_rate": 0.0,
+    "duplicate_rate": 0.0,
+    "passed": true
+  },
+  "spark_tables_verified": {
+    "project_activity_summary": true,
+    "user_activity_summary": true,
+    "escalation_log": true,
+    "daily_event_volume": true,
+    "peak_usage_analysis": true
+  },
+  "critical_escalations_republished": 192
+}
