@@ -179,8 +179,136 @@ CREATE TABLE fact_transactions (
 -- Example (DuckDB):
 -- INSERT INTO dim_project SELECT * FROM read_csv_auto('outputs/projects_clean.csv');
 
--- TODO: Load your data here
--- YOUR CODE HERE
+-- Populate dim_employee using SCD Type 2 logic.
+-- employees_salary_history.csv is a change-event log (one row per change,
+-- with previous_*/new_* pairs and an effective_date). We convert this into
+-- one row per employee-version using LEAD() to find each version's end date:
+-- the next change's effective_date (minus a day) becomes this version's
+-- valid_to. The final version per employee (LEAD is NULL) gets the
+-- 9999-12-31 sentinel and is_current = TRUE.
+--
+-- Employees absent from the history file entirely get a single row sourced
+-- directly from employees.csv, with valid_from = hire_date.
+--
+-- ASSUMPTION: department, email, region, and status are treated as
+-- present-day-only attributes (not tracked historically), since the source
+-- history file doesn't carry versions of these fields — only salary/role/level.
+INSERT INTO dim_employee (
+    employee_key, employee_id, full_name, email, department, role, level,
+    salary, region, status, valid_from, valid_to, is_current, change_reason
+)
+WITH emp_raw AS (
+    SELECT * FROM read_csv_auto('outputs/employees_clean.csv')
+),
+history_raw AS (
+    SELECT * FROM read_csv_auto('datasets/employees_salary_history.csv')
+),
+history_versions AS (
+    SELECT
+        employee_id,
+        new_salary AS salary,
+        new_role AS role,
+        new_level AS level,
+        CAST(effective_date AS DATE) AS valid_from,
+        LEAD(CAST(effective_date AS DATE)) OVER (
+            PARTITION BY employee_id ORDER BY effective_date
+        ) AS next_effective_date,
+        change_reason
+    FROM history_raw
+),
+history_final AS (
+    SELECT
+        h.employee_id,
+        e.full_name,
+        e.email,
+        e.department,
+        h.role,
+        h.level,
+        h.salary,
+        e.region,
+        e.status,
+        h.valid_from,
+        COALESCE(h.next_effective_date - INTERVAL 1 DAY, DATE '9999-12-31') AS valid_to,
+        (h.next_effective_date IS NULL) AS is_current,
+        h.change_reason
+    FROM history_versions h
+    JOIN emp_raw e ON e.employee_id = h.employee_id
+),
+no_history_final AS (
+    SELECT
+        e.employee_id,
+        e.full_name,
+        e.email,
+        e.department,
+        e.role,
+        e.level,
+        e.salary,
+        e.region,
+        e.status,
+        -- Fallback: 8 employees have no salary history AND a null hire_date
+        -- (nulled during cleaning due to unparseable source values like
+        -- "-999"/"99999-01-01"). Rather than drop these employees from the
+        -- dimension entirely (which would orphan any fact rows referencing
+        -- them), we use a 1900-01-01 sentinel to signal "start date unknown"
+        -- while still making the employee queryable.
+        COALESCE(CAST(e.hire_date AS DATE), DATE '1900-01-01') AS valid_from,
+        DATE '9999-12-31' AS valid_to,
+        TRUE AS is_current,
+        NULL AS change_reason
+    FROM emp_raw e
+    WHERE e.employee_id NOT IN (SELECT DISTINCT employee_id FROM history_raw)
+),
+combined AS (
+    SELECT * FROM history_final
+    UNION ALL
+    SELECT * FROM no_history_final
+)
+SELECT
+    ROW_NUMBER() OVER (ORDER BY employee_id, valid_from) AS employee_key,
+    employee_id, full_name, email, department, role, level, salary, region,
+    status, valid_from, valid_to, is_current, change_reason
+FROM combined;
+
+-- ---------------------------------------------------------------------------
+-- SCD2 Validation Queries (required by Task 1.2)
+-- ---------------------------------------------------------------------------
+
+-- Q1: No employee has more than one current record.
+-- Confirms is_current integrity — must return zero rows.
+SELECT employee_id, COUNT(*) AS current_count
+FROM dim_employee
+WHERE is_current = TRUE
+GROUP BY employee_id
+HAVING COUNT(*) > 1;
+
+-- Q2: Show employees with version history.
+-- Sanity check that multi-version employees exist and the counts look
+-- reasonable (expect 2-5 versions per employee who appears in the history file).
+SELECT employee_id, COUNT(*) AS version_count
+FROM dim_employee
+GROUP BY employee_id
+ORDER BY version_count DESC
+LIMIT 10;
+
+-- Q3: Self-join to detect overlapping periods per employee.
+-- For each employee, compare every pair of its own version rows (excluding
+-- comparing a row to itself). Two periods overlap if one's valid_from falls
+-- strictly between the other's valid_from and valid_to. A properly built
+-- SCD2 table should return zero rows here — any result indicates a bug in
+-- the valid_from/valid_to boundary logic (e.g. an off-by-one in the LEAD()
+-- calculation, or a duplicate/conflicting history entry).
+SELECT
+    a.employee_id,
+    a.employee_key AS version_a,
+    b.employee_key AS version_b,
+    a.valid_from AS a_start, a.valid_to AS a_end,
+    b.valid_from AS b_start, b.valid_to AS b_end
+FROM dim_employee a
+JOIN dim_employee b
+    ON a.employee_id = b.employee_id
+    AND a.employee_key < b.employee_key
+WHERE a.valid_from <= b.valid_to
+  AND b.valid_from <= a.valid_to;
 
 
 -- ===========================================================================
